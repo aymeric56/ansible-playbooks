@@ -1,0 +1,79 @@
+---
+- name: Deploy a war file to z/OS Connect server
+  hosts: zt01
+  # collections:
+  #   - ibm.ibm_zos_core
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars_prompt:
+    - name: wartodeploy
+      prompt: Name of the war to deploy (sans le .war) like phoneBookCICS_v1.0
+      private: false
+    - name: pathContextRoot
+      prompt: Base Path for the API like phoneBook/CICS/v1.0
+      private: false
+
+  tasks:
+    # Copy le .war dans le répertoire du serveur
+    - name: Copy file in the apps directory
+      ansible.builtin.copy:
+        src: ./war/{{ wartodeploy }}.war
+        dest: /var/zosconnect/servers/MOPZCEW/apps
+        mode: '0644'
+
+    - name: Add the webApplication to the config
+      ibm.ibm_zos_core.zos_lineinfile:
+        src: /var/zosconnect/servers/MOPZCEW/server.xml
+        encoding: ISO8859-1
+        regexp: '{{ wartodeploy }}'
+        insertafter: 'webApplication '
+        line: '    <webApplication id="{{ wartodeploy }}" name="{{ wartodeploy }}" location="/var/zosconnect/servers/MOPZCEW/apps/{{ wartodeploy }}.war" context-root="{{ pathContextRoot }}"/>'
+
+    # Execute an operator command to refresh the serveur apps
+    - name: Refresh Server Apps
+      ibm.ibm_zos_core.zos_operator:
+        cmd: 'f MOPZCEW,refresh,apps'
+      register: refreshapps
+
+    - name: Show Refresh Apps
+      ansible.builtin.debug:
+        msg: "{{ refreshapps.content }}"
+
+    # Execute an operator command to refresh the serveur config
+    - name: Refresh Server Config
+      ibm.ibm_zos_core.zos_operator:
+        cmd: 'f MOPZCEW,refresh,config'
+      register: refreshconf
+
+    - name: Show Refresh Config
+      ansible.builtin.debug:
+        msg: "{{ refreshconf.content }}"
+
+    # On change le tag car si on laisse UTF-8, le grep ne passe pas.
+    - name: Searching for a String
+      ansible.builtin.shell: |
+        chtag -c ISO8859-1 /var/zosconnect/servers/MOPZCEW/logs/messages.log
+        grep -i '{{ wartodeploy }}' /var/zosconnect/servers/MOPZCEW/logs/messages.log
+      register: grepoutput
+      changed_when: false
+
+    - name: Show messages.log
+      ansible.builtin.debug:
+        msg: "{{ grepoutput.stdout_lines }}"
+
+
+    #############################################################################################################################
+
+    # # Fetch messsages.log
+    # - name: Fetch messages.log
+    #   zos_fetch:
+    #     src: /var/zosconnect/servers/MOPZCEW/logs/messages.log
+    #     dest: /Users/Aymeric/Documents/Softwares/ansible/logs/
+    #     flat: true
+    #     is_binary: true
+    #   register: fetchOutput
+
+    # - name: Show fetchOutput
+    #   debug:
+    #     msg: "{{ fetchOutput }}"

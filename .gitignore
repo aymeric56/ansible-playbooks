@@ -1,0 +1,8 @@
+# Password           #
+######################
+password_file
+secrets.enc
+
+# OS generated files #
+######################
+.DS_Store
