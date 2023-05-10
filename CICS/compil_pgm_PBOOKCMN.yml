@@ -1,0 +1,98 @@
+---
+- hosts: zt01
+  collections:
+    - ibm.ibm_zos_core
+    - ibm.ibm_zos_cics
+  gather_facts: no
+  environment: "{{ environment_vars }}"
+
+  vars:
+    program: 'PBOOKCMN'
+    csdgroup: 'AYMERIC'
+    cmci_host: '10.3.20.1'
+    cmci_port: '3050'
+    cmci_user: 'AYMERIC'
+    context: 'MOBPLEX'
+    scope: 'CICSMOBP'
+    scheme: 'http'
+
+  # vars_prompt:
+  #  - name: cmci_user
+  #    prompt: CMCI user name (leave blank for unauthenticated)
+  #  - name: cmci_password
+  #    prompt: CMCI password (leave blank for unauthenticated)
+
+  tasks:
+    - name: Create temporary directory for the compilation JCL
+      tempfile:
+        state: directory
+      register: temp_file_path
+      delegate_to: localhost
+
+    # COBOL compilation: compilation & linkedit
+    - name: Compile templates and put results in temporary directory
+      template:
+        src: "./templates/COMPCCOB.j2"
+        dest: "{{ temp_file_path.path }}/COMPCCOB.j2"
+        output_encoding: "ASCII"
+      delegate_to: localhost
+    - name: Submit compil job
+      ibm.ibm_zos_core.zos_job_submit:
+        src: "{{ temp_file_path.path }}/COMPCCOB.j2"
+        location: LOCAL
+        wait: true
+        wait_time_s: 2
+        return_output: True
+        encoding:
+          from: ISO8859-1
+          to: IBM-037
+      register: respCompil
+    - name: Output Soumission Compil
+      debug:
+        msg: "{{ respCompil.jobs[0].job_id }}"
+
+    - name: Job output 
+      zos_job_output:
+        job_id: "{{ respCompil.jobs[0].job_id }}"
+      register: outputCompil
+    - name: Output Compil
+      debug:
+        msg: "{{ outputCompil.jobs[0].ddnames[0].content }}"
+
+    ############################################################################
+    # Install module dependencies
+    ############################################################################
+    - name: Make sure CMCI module dependencies are installed
+      pip:
+        name:
+          - requests
+          - xmltodict
+          - typing;python_version<"3.5"
+
+    ############################################################################
+    # NEWCOPY
+    ############################################################################
+    - name: NEWCOPY PROGRAM in CICS
+      delegate_to: localhost
+      cmci_action:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        action_name: NEWCOPY
+        type: CICSProgram
+        resources:
+          filter:
+            program: '{{ program }}'
+      register: outNewcopy
+  
+    - name: outNewcopy CICS
+      debug:
+        msg: 
+          - {"CMCI failed": "{{ outNewcopy.failed }}",
+            "program": "{{ outNewcopy.records[0].program }}",
+            "status": "{{ outNewcopy.records[0].status }}" }
+

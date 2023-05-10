@@ -1,0 +1,150 @@
+---
+- name: Add resources in CICS for z/OS Connect API Requester
+  hosts: zt01
+  # collections:
+  #   - ibm.ibm_zos_core
+  #   - ibm.ibm_zos_cics
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars:
+    csdgroup: 'BAQHAPI'
+    cmci_host: '10.3.20.1'
+    cmci_port: '3050'
+    cmci_user: 'AYMERIC'
+    context: 'MOBPLEX'
+    scope: 'CICSMOBP'
+    scheme: 'http'
+
+  # vars_prompt:
+  #  - name: cmci_user
+  #    prompt: CMCI user name (leave blank for unauthenticated)
+  #  - name: cmci_password
+  #    prompt: CMCI password (leave blank for unauthenticated)
+
+  ##########################################################################################################
+  # playbook pour réaliser le BAQHCSD de z/OS Connect EE pour la configuration du CICS pour API Requester
+  ##########################################################################################################
+
+  tasks:
+    ############################################################################
+    # Install module dependencies
+    ############################################################################
+    - name: Make sure CMCI module dependencies are installed
+      ansible.builtin.pip:
+        name:
+          - requests
+          - xmltodict
+          - typing;python_version<"3.5"
+
+    - name: Delete du group {{ csdgroup }}
+      delegate_to: 'localhost'
+      ibm.ibm_zos_cics.cmci_delete:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        type: 'CICSCSDGroup'
+        resources:
+          filter:
+            name: "{{ csdgroup }}"
+      ignore_errors: true
+      register: delete_step
+
+    - name: Create PROGRAMs
+      loop:
+        - { program: 'BAQINIT', description: 'z/OS Connect CICS Host API INIT' }
+        - { program: 'BAQEXEC', description: 'z/OS Connect CICS Host API EXEC' }
+        - { program: 'BAQGETN', description: 'z/OS Connect CICS Host API GETN' }
+        - { program: 'BAQPUTN', description: 'z/OS Connect CICS Host API PUTN' }
+        - { program: 'BAQFREE', description: 'z/OS Connect CICS Host API FREE' }
+        - { program: 'BAQTERM', description: 'z/OS Connect CICS Host API TERM' }
+      delegate_to: 'localhost'
+      ibm.ibm_zos_cics.cmci_create:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        type: 'CICSDefinitionProgram'
+        attributes:
+          name: '{{ item.program }}'
+          csdgroup: '{{ csdgroup }}'
+          DESCRIPTION: '{{ item.description }}'
+          RELOAD: 'no'
+          RESIDENT: 'no'
+          USAGE: 'NORMAL'
+          USELPACOPY: 'no'
+          STATUS: 'ENABLED'
+          CEDF: 'yes'
+          DATALOCATION: 'ANY'
+          EXECKEY: 'USER'
+          CONCURRENCY: 'THREADSAFE'
+          API: 'CICSAPI'
+          DYNAMIC: 'no'
+          EXECUTIONSET: 'FULLAPI'
+          JVM: 'no'
+        create_parameters:
+          - name: 'CSD'
+
+    - name: Create URIMAP BAQHZCON
+      delegate_to: 'localhost'
+      ibm.ibm_zos_cics.cmci_create:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        type: 'CICSDefinitionURIMap'
+        attributes:
+          name: 'BAQHZCON'
+          csdgroup: '{{ csdgroup }}'
+          DESCRIPTION: 'Default URIMAP for z/OS Connect server'
+          STATUS: 'ENABLED'
+          USAGE: 'CLIENT'
+          SCHEME: 'HTTP'
+          PORT: '51180'
+          HOST: '127.0.0.1'
+          PATH: '/ANYVALUE'
+          ANALYZER: 'no'
+          AUTHENTICATE: 'no'
+          REDIRECTTYPE: 'NONE'
+          SOCKETCLOSE: '30'
+        create_parameters:
+          - name: 'CSD'
+
+    - name: Create TDQUEUE BAQH
+      delegate_to: 'localhost'
+      ibm.ibm_zos_cics.cmci_create:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        type: 'CICSDefinitionTDQueue'
+        attributes:
+          name: 'BAQH'
+          csdgroup: '{{ csdgroup }}'
+          DESCRIPTION: 'TDQ for z/OS Connect Host API error message'
+          TDQTYPE: 'EXTRA'
+          DATABUFFERS: '1'
+          DDNAME: 'BAQHMSG'
+          ERROROPTION: 'IGNORE'
+          OPENTIME: 'INITIAL'
+          TYPEFILE: 'OUTPUT'
+          RECORDSIZE: '196'
+          BLOCKSIZE: '200'
+          RECORDFORMAT: 'VARIABLE'
+          BLOCKFORMAT: 'UNBLOCKED'
+          DISPOSITION: 'MOD'
+        create_parameters:
+          - name: 'CSD'
