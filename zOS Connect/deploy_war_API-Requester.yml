@@ -18,7 +18,7 @@
     # Copy le .war dans le répertoire du serveur
     - name: Copy file in the apps directory
       ansible.builtin.copy:
-        src: /Users/Aymeric/Documents/Workspaces/git/MPL-zCEE-APIs/apiRequester/archivedContacts_CICS_OpenAPI3_v1.0/build/libs/archivedContacts_CICS_OpenAPI3_v1.0.war
+        src: ./war/archivedContacts_CICS_OpenAPI3_v1.0.war
         dest: /var/zosconnect/servers/MOPZCEW/apps
         mode: '0644'
 

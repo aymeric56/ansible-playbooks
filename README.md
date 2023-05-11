@@ -3,7 +3,7 @@
 ## IMS
 - compilation of a COBOL program & free region
 
-`ansible-playbook -i inventories pgm_compilation_v3.yml`
+`ansible-playbook -i inventories IMS/pgm_compilation_v3.yml`
 
 ## CICS
 - compilation of a COBOL program & Newcopy in CICS
@@ -19,8 +19,8 @@
 ## z/OS Connect
 - add API Provider
 
-`ansible-playbook -i inventories zCEE_Deploy_war_API_Provider.yml`
+`ansible-playbook -i inventories zOS\ Connect/deploy_war_API-Provider.yml`
 
 - add API Requester
 
-`ansible-playbook -i inventories zCEE_Deploy_war_API_Requester.yml`
+`ansible-playbook -i inventories zOS\ Connect/deploy_war_API-Requester.yml`
