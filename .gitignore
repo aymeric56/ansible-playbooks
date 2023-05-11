@@ -1,7 +1,8 @@
-# Password           #
+# Password & other   #
 ######################
 password_file
 secrets.enc
+zapp.yaml
 
 # OS generated files #
 ######################
