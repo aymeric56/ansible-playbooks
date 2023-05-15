@@ -1,5 +1,5 @@
 ---
-- name: Compilation d'un programme CICS COBOL
+- name: Compilation d'un programme CICS COBOL avec SQL
   hosts: zt01
   # collections:
   #   - ibm.ibm_zos_core
@@ -98,6 +98,6 @@
     - name: OutNewcopy CICS
       ansible.builtin.debug:
         msg:
-          - {"CMCI failed": "{{ outnewcopy.failed }}",
-             "program": "{{ outnewcopy.records[0].program }}",
-             "status": "{{ outnewcopy.records[0].status }}" }
+          - { "CMCI failed": "{{ outnewcopy.failed }}",
+              "program": "{{ outnewcopy.records[0].program }}",
+              "status": "{{ outnewcopy.records[0].status }}" }
