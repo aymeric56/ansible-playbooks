@@ -35,7 +35,7 @@
     # COBOL compilation: pre-compile & compilation & linkedit & bind
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
-        src: "./templates/COIMSDB2.j2"
+        src: "./templates/COIMSDB2_coprocessor.j2"
         dest: "{{ temp_file_path.path }}/COIMSDB2.j2"
         output_encoding: "ASCII"
         mode: '0644'

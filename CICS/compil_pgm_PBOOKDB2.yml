@@ -34,7 +34,7 @@
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
         # src: "./templates/COMPCDB2.j2"
-        src: "./templates/COMPCDB2_coprocesseur.j2"
+        src: "./templates/COMPCDB2_coprocessor.j2"
         dest: "{{ temp_file_path.path }}/COMPCDB2.j2"
         output_encoding: "ASCII"
         mode: '0644'
