@@ -8,7 +8,7 @@
   environment: "{{ environment_vars }}"
 
   vars:
-    program: 'PBOOKCMN'
+    pgmtocompile: 'PBOOKCMN'
     csdgroup: 'AYMERIC'
     cmci_host: '10.3.20.1'
     cmci_port: '3050'
@@ -90,7 +90,7 @@
         type: CICSProgram
         resources:
           filter:
-            program: '{{ program }}'
+            program: '{{ pgmtocompile }}'
       register: outnewcopy
 
     - name: Outnewcopy CICS
