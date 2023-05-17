@@ -37,13 +37,12 @@
 //   SET COBOLLIB='COBOL.V6R3.SIGYCOMP'       COBOL COMPILER LOADLIB
 //   SET LNGPRFX='COBOL.V6R3'                 COBOL COMPILER LOADLIB
 //   SET LELIB='CEE.SCEELKED'                 LE LINKEDIT LIBRARY
-//*   SET DSPREFIX='AYMERIC'                   DATASETs PREFIX
-//   SET DSPREFIX='AYMERIC.IMS'                   DATASETs PREFIX
-//*   SET DB2PREF='DBC0CFG.DB2.V12'
-//   SET DB2PREF='DB2.V12'
+//   SET DSPREFIX='AYMERIC.IMS'               DATASETs PREFIX
+//   SET DB2PREF={{ db2prefix }}              PREFIX DB2
+//*   SET DB2PREF='DB2.V12'                   pour mainplex
+//*   SET DB2PREF='DBC0CFG.DB2.V12'           pour guest zAcademy
 //   SET DB2=DBC1
 //*   SET DB2=DBC0
-//*   SET LIBPRFX='CEE'                        LE LINKEDIT LIBRARY PREFIX
 //*
 //*  ***************************************************
 //*        COMPILE & DBRM STEP via le coprocesseur
@@ -63,7 +62,7 @@
 //*    NODYNAM,SOURCE,NOXREF
 //*    SQL(HOST(COB2),QUOTE,APOSTSQL,SOURCE,XREF)
 //DBRMLIB  DD DISP=SHR,DSN=&DSPREFIX..DBRMLIB.DATA(&MEM)
-//SYSIN    DD DISP=SHR,DSN=AYMERIC.IMS.SOURCES(&MEM)
+//SYSIN    DD DISP=SHR,DSN=&DSPREFIX..SOURCES(&MEM)
 //SYSLIN   DD DSN=&&LOADSET,DISP=(MOD,PASS),UNIT=SYSDA, 
 //            SPACE=(800,(500,500))
 //SYSPRINT DD SYSOUT=*

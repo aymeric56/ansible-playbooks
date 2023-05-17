@@ -1,0 +1,36 @@
+---
+- name: Simple z/OS tasks
+  hosts: zac
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    # Display ansible_facts
+    - name: Display ansible_facts if gather_facts = true
+      ansible.builtin.debug:
+        msg: "{{ ansible_facts }}"
+
+    # Detecting system name
+    - name: Detecting system name
+      ansible.builtin.command: uname -n
+      register: result
+      changed_when: result.rc != 0
+
+    - name: Setting fact `system_name` for use by this sample
+      ansible.builtin.set_fact:
+        system_name: "{{ result.stdout }}"
+
+    - name: Fact `system_name` set with value
+      ansible.builtin.debug:
+        msg: "{{ system_name }}"
+
+    # Execute TSO command
+    - name: Execute TSO command list user MOPZSTC to obtain TSO information
+      ibm.ibm_zos_core.zos_tso_command:
+        commands:
+          - LU MOPZSTC
+      register: display
+
+    - name: Show display
+      ansible.builtin.debug:
+        msg: "{{ display.output[0].content }}"
