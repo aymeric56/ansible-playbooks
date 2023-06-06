@@ -1,12 +1,10 @@
 ---
 - name: Playbook de compilation IMS
-  hosts: zac
+  hosts: zt01
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
-    pgmtocompile: IVTNDB2
-    # db2prefix: DB2.V12                      # cas mainplex
-    db2prefix: DBC0CFG.DB2.V12              # cas guest zAcademy
+    pgmtocompile: IVTNOMPL
 
   tasks:
     - name: Create temporary directory for the compilation JCL
@@ -34,14 +32,14 @@
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
-        src: "./templates/COIMSDB2_coprocessor.j2"
-        dest: "{{ temp_file_path.path }}/COIMSDB2.j2"
+        src: "./templates/COIMSDB.j2"
+        dest: "{{ temp_file_path.path }}/COIMSDB.j2"
         output_encoding: "ASCII"
         mode: '0644'
       delegate_to: localhost
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COIMSDB2.j2"
+        src: "{{ temp_file_path.path }}/COIMSDB.j2"
         location: LOCAL
         wait: true
         wait_time_s: 2

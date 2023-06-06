@@ -1,0 +1,32 @@
+    - name: Compile templates and put results in temporary directory
+      ansible.builtin.template:
+        src: "./templates/DBDGEN.j2"
+        dest: "{{ temp_file_path.path }}/DBDGEN.j2"
+        output_encoding: "ASCII"
+        mode: '0644'
+      delegate_to: localhost
+
+    - name: Submit DBDGEN job for DBD {{ dbd }}
+      ibm.ibm_zos_core.zos_job_submit:
+        src: "{{ temp_file_path.path }}/DBDGEN.j2"
+        location: LOCAL
+        wait: true
+        wait_time_s: 2
+        return_output: true
+        encoding:
+          from: ISO8859-1
+          to: IBM-037
+      register: respcompil
+      
+    - name: Output Soumission
+      ansible.builtin.debug:
+        msg: "{{ respcompil.jobs[0].job_id }}"
+
+    - name: Job output
+      ibm.ibm_zos_core.zos_job_output:
+        job_id: "{{ respcompil.jobs[0].job_id }}"
+      register: outputcompil
+    
+    - name: Output DBDGEN
+      ansible.builtin.debug:
+        msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"

@@ -1,0 +1,159 @@
+---
+- name: Playbook Extended ACB & Catalog
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    - set_fact:
+        db: IVPDB1
+        dbds:
+          - IVPDB1
+          - IVPDB1I
+        #psb: DFSIVP1
+        psb: IVTNOMPL
+
+    - name: Create temporary directory for the JCL
+      ansible.builtin.tempfile:
+        state: directory
+      register: temp_file_path
+      delegate_to: localhost
+
+    # DBDGEN loop
+    # - name: create DBDs
+    #   include_tasks: DBDGEN.yml
+    #   loop: "{{ dbds }}"
+    #   loop_control:
+    #     loop_var: dbd
+
+    # PSBGEN
+    # - name: Compile templates and put results in temporary directory
+    #   ansible.builtin.template:
+    #     src: "./templates/PSBGEN.j2"
+    #     dest: "{{ temp_file_path.path }}/PSBGEN.j2"
+    #     output_encoding: "ASCII"
+    #     mode: '0644'
+    #   delegate_to: localhost
+    # - name: Submit PSBGEN job PSB {{ psb }}
+    #   ibm.ibm_zos_core.zos_job_submit:
+    #     src: "{{ temp_file_path.path }}/PSBGEN.j2"
+    #     location: LOCAL
+    #     wait: true
+    #     wait_time_s: 2
+    #     return_output: true
+    #     encoding:
+    #       from: ISO8859-1
+    #       to: IBM-037
+    #   register: responsejcl
+    # - name: Output Soumission PSBGEN
+    #   ansible.builtin.debug:
+    #     msg: "{{ responsejcl.jobs[0].job_id }}"
+    # - name: Job output
+    #   ibm.ibm_zos_core.zos_job_output:
+    #     job_id: "{{ responsejcl.jobs[0].job_id }}"
+    #   register: outputjob
+    # - name: Output PSBGEN
+    #   ansible.builtin.debug:
+    #     msg: "{{ outputjob.jobs[0].ddnames[0].content }}"
+
+    # Au besoin il faut que le catalog soit en update:
+    # UPDATE DB NAME(DFS*) START(ACCESS) SET(ACCTYPE(UPD))
+    # QRY DB NAME(DFSC*) SHOW(ALL)         /*IS CATALOG AVAILABLE FOR UPDATE?/*
+
+
+    # We ask IMS to STOP the DB
+    # - name: We ask IMS to stop the DB {{ db }}
+    #   ibm.ibm_zos_ims.ims_command:
+    #     command: STOP DB {{ db }}
+    #     plex: IMSC
+    #     route: IMC1
+    #   register: imsout1
+    #   ignore_errors: true
+    # - name: Resultat de STOP DB
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "Message de sortie": "{{ imsout1.msg }}"
+    #       - "{{ imsout1.ims_output[0].type_1_response[0] }}"
+
+    # ACBGEN & Catalog Populate Utilty
+    - name: Compile templates and put results in temporary directory
+      ansible.builtin.template:
+        src: "./templates/ACBGEN_DFS3PU00.j2"
+        dest: "{{ temp_file_path.path }}/ACBGEN_DFS3PU00.j2"
+        output_encoding: "ASCII"
+        mode: '0644'
+      delegate_to: localhost
+    - name: Submit ACBGEN_DFS3PU00 job
+      ibm.ibm_zos_core.zos_job_submit:
+        src: "{{ temp_file_path.path }}/ACBGEN_DFS3PU00.j2"
+        location: LOCAL
+        wait: true
+        wait_time_s: 2
+        return_output: true
+        encoding:
+          from: ISO8859-1
+          to: IBM-037
+      register: responsejcl
+    - name: Output Soumission ACBGEN_DFS3PU00
+      ansible.builtin.debug:
+        msg: "{{ responsejcl.jobs[0].job_id }}"
+    - name: Job output
+      ibm.ibm_zos_core.zos_job_output:
+        job_id: "{{ responsejcl.jobs[0].job_id }}"
+      register: outputjob
+    - name: Output ACBGEN & Catalog Populate Utility
+      ansible.builtin.debug:
+        msg: "{{ outputjob.jobs[0].ddnames[0].content }}"
+
+    # We ask IMS to Online Change
+    - name: We ask IMS to start the DB {{ db }}
+      ibm.ibm_zos_ims.ims_command:
+        batch:
+          -
+            command: INIT OLC PHASE(PREPARE) TYPE(ACBMBR) NAME({{ psb }})
+            plex: IMSC
+            route: IMC1
+            register: imsout1
+          -
+            command: INIT OLC PHASE(COMMIT)
+            plex: IMSC
+            route: IMC1
+            register: imsout2
+      ignore_errors: true
+    - name: Resultat de Online Change
+      ansible.builtin.debug:
+        msg:
+          - "Message de sortie 1": "{{ imsout1.msg }}"
+          - "{{ imsout1.ims_output[0].type_2_response[0] }}"
+          - "Message de sortie 2": "{{ imsout2.msg }}"
+          - "{{ imsout2.ims_output[0].type_2_response[0] }}"
+
+    # We ask IMS to START the DB
+    # - name: We ask IMS to stop the DB {{ db }}
+    #   ibm.ibm_zos_ims.ims_command:
+    #     command: START DB {{ db }}
+    #     plex: IMSC
+    #     route: IMC1
+    #   register: imsout1
+    #   ignore_errors: true
+    # - name: Resultat de START DB
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "Message de sortie": "{{ imsout1.msg }}"
+    #       - "{{ imsout1.ims_output[0].type_1_response[0] }}"
+
+    # Online Change
+    # QUERY OLC LIBRARY(OLCSTAT) SHOW(ALL)
+    # QUERY MEMBER TYPE(IMS) SHOW(STATUS)
+    # OLCUTL pour copier la librairie ACB active sur la staging (par example: from IMSCFG.IMC1.ACBLIBB to IMSCFG.IMC1.ACBLIBA)
+    # DISPLAY MODIFY ALL
+    # INIT OLC PHASE(PREPARE) TYPE(ACBMBR) NAME(DFSIVP1)
+    # INIT OLC PHASE(PREPARE) TYPE(ACBMBR) NAME(IVTNOMPL)
+    # # INIT OLC PHASE(PREPARE) TYPE(ALL)
+    # # INIT OLC PHASE(PREPARE) TYPE(ACBLIB)
+    # # INIT OLC PHASE(PREPARE) TYPE(FMTLIB)
+    # # INIT OLC PHASE(PREPARE) TYPE(MODBLKS)
+    # INIT OLC PHASE(COMMIT)
+    #
+    # Pour abort suite à la phase PREPARE:
+    # TERMINATE OLC

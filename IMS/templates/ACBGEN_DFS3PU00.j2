@@ -1,0 +1,54 @@
+//AYACBCAT JOB ,
+// CLASS=A,MSGLEVEL=(1,1),REGION=0M,NOTIFY=&SYSUID,
+// MSGCLASS=H
+//*
+//*******************************************************************
+//* DFS3UACB GENERATES ACB MEMBERS IN AN ACB LIBRARY BY CALLING THE
+//* ACB MAINTENANCE UTILITY. IN THE SAME JOB STEP,
+//* DFS3UACB INSERTS RECORDS IN THE EXISTING IMS CATALOG BY CALLING
+//* THE IMS CATALOG POPULATE UTILITY (DFS3PU00)
+//*******************************************************************
+//*
+/*JOBPARM  SYSAFF=ZT01
+//ACBCATT EXEC PGM=DFS3UACB,REGION=0M
+//*
+//STEPLIB  DD  DSN=IMSCFG.IMC1.SDFSRESL,DISP=SHR
+//PROCLIB  DD  DSN=IMSCFG.IMSC.PROCLIB,DISP=SHR
+//DFSRESLB DD  DSN=IMSCFG.IMC1.SDFSRESL,DISP=SHR
+//SYSPRINT DD  SYSOUT=*
+//SYSOUT   DD  SYSOUT=*
+//SYSABEND DD  SYSOUT=*
+//IMS      DD  DSN=IMSCFG.IMSC.PSBLIB,DISP=SHR
+//         DD  DSN=IMSCFG.IMSC.DBDLIB,DISP=SHR
+//ACBCATWK DD UNIT=SYSDA,SPACE=(CYL,(10,10)),
+//            DCB=(LRECL=800,BLKSIZE=8800,RECFM=FB)
+//SYSINP DD *
+  ISRTLIST DUPLIST
+//*
+//*******************************************************************
+//* ACBGEN DATASETS
+//*******************************************************************
+//IMSACB   DD  DSN=IMSCFG.IMC1.ACBLIB,DISP=SHR
+//SYSUT3   DD  UNIT=SYSDA,SPACE=(80,(100,100))
+//SYSUT4   DD  UNIT=SYSDA,SPACE=(256,(100,100)),DCB=KEYLEN=30
+//*******************************************************************
+//* ACBGEN INPUT PARMS TO UPDATE ACBLIB
+//*******************************************************************
+//SYSIN  DD *
+  BUILD PSB=({{ psb }}),DBD=(IVPDB1,IVPDB1I)
+/*
+//*******************************************************************
+//* POPULATE UTILITY DATASETS
+//*******************************************************************
+//IMSACB01 DD  DSN=*.IMSACB,DISP=SHR
+//*******************************************************************
+//* UPDATE INPUT PARMS FOR IMS CATALOG POPULATE UTILITY
+//*******************************************************************
+//DFS3PPRM DD  *
+BMP,DFS3PU00,DFSCP001,,,,,,,,,,,IMC1,,,,,,
+/*
+//
+DLI,DFS3PU00,DFSCP001,,,,,,,,,,,Y,Y,IRLC,,,,,,,,,,,,DFSDF=0C1
+DLI,DFS3PU00,DFSCP001,,,,,,,,,,,Y,N,,,,,,,,,,,,DFSDF=0C1
+BMP,DFS3PU00,DFSCP001,,,N00000,,,,1,,,,IMC1,BMP01,,,,'',
+BMP,DFS3PU00,DFSCP001,,,,,,,,,,,IMC1,,,,,,
