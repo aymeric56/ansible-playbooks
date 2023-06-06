@@ -4,9 +4,11 @@
 - compilation of a COBOL program & free region
 
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_DB2.yml`
+
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_IMS_DB.yml`
 
 - extended ACB gen & Catalog
+
 `ansible-playbook -i inventories IMS/extended_ACB_and_Catalog.yml`
 
 ## CICS
