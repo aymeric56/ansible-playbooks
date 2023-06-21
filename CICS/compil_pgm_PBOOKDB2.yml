@@ -1,9 +1,6 @@
 ---
 - name: Compilation d'un programme CICS COBOL avec SQL
   hosts: zt01
-  # collections:
-  #   - ibm.ibm_zos_core
-  #   - ibm.ibm_zos_cics
   gather_facts: false
   environment: "{{ environment_vars }}"
 
@@ -29,6 +26,26 @@
         state: directory
       register: temp_file_path
       delegate_to: localhost
+
+    - name: Copy local progam files to a PDS member
+      loop:
+        - { membre: 'API00I01', fichier: 'API00I01.cpy' }
+        - { membre: 'API00P01', fichier: 'API00P01.cpy' }
+        - { membre: 'API00Q01', fichier: 'API00Q01.cpy' }
+        - { membre: 'BAQHAREC', fichier: 'BAQHAREC.cpy' }
+        - { membre: 'BAQHCONC', fichier: 'BAQHCONC.cpy' }
+        - { membre: 'BAQRINFO', fichier: 'BAQRINFO.cpy' }
+        - { membre: 'PBOOKCIN', fichier: 'PBOOKCIN.cpy' }
+        - { membre: 'PBOOKCO1', fichier: 'PBOOKCO1.cpy' }
+        - { membre: 'PBOOKCO2', fichier: 'PBOOKCO2.cpy' }
+        - { membre: 'PBOOKDB2', fichier: 'PBOOKDB2.cbl' }
+      ibm.ibm_zos_core.zos_copy:
+        src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/CICS/programs/PhoneBook/{{ item.fichier }}
+        dest: AYMERIC.CICS.SOURCES({{ item.membre }})
+        encoding:
+          from: UTF-8
+          to: IBM-1140
+        remote_src: false
 
     # COBOL compilation: compilation & linkedit
     - name: Compile templates and put results in temporary directory

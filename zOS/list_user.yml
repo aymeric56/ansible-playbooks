@@ -1,0 +1,18 @@
+---
+- name: List User
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    # Execute TSO command
+    - name: Execute TSO command list user MOPZSTC to obtain TSO information
+      ibm.ibm_zos_core.zos_tso_command:
+        commands:
+          - LU MOPZSTC
+      register: display
+
+    - name: Show display
+      ansible.builtin.debug:
+    #    msg: "{{ display }}"
+        msg: "{{ display.output[0].content }}"

@@ -6,7 +6,10 @@
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_DB2.yml`
 
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_IMS_DB.yml`
-- extended ACB gen & Catalog
+- stop / start of MPRs
+
+`ansible-playbook -i inventories IMS/stop_start_MPRs.yml`
+- extended ACB gen & Catalog population
 
 `ansible-playbook -i inventories IMS/extended_ACB_and_Catalog.yml`
 
@@ -29,3 +32,8 @@
 - add API Requester
 
 `ansible-playbook -i inventories zOS\ Connect/deploy_war_API-Requester.yml`
+
+## z/OS
+- list user
+
+`ansible-playbook -i inventories zOS/list_user.yml`

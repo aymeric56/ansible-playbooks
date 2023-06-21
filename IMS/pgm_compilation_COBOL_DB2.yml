@@ -18,7 +18,7 @@
     # We ask IMS to free the program
     - name: We force MPR to free program ({{ pgmtocompile }})
       ibm.ibm_zos_ims.ims_command:
-        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }})
+        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }}) OPTION(ALLRSP)
         # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
         # command: UPDATE PGM START(REFRESH) NAME(*)
         plex: IMSC
@@ -32,6 +32,16 @@
           - "{{ imsout1.ims_output[0].type_2_response[0] }}"
 
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
+    - name: Copy a local progam file to a PDS member
+      loop:
+        - { membre: 'IVTNDB2', fichier: 'IVTNDB2.cbl' }
+      ibm.ibm_zos_core.zos_copy:
+        src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/IMS/programs/{{ item.fichier }}
+        dest: AYMERIC.IMS.SOURCES({{ item.membre }})
+        encoding:
+          from: UTF-8
+          to: IBM-1140
+        remote_src: false
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
         src: "./templates/COIMSDB2_coprocessor.j2"

@@ -5,12 +5,13 @@
   environment: "{{ environment_vars }}"
 
   tasks:
-    - set_fact:
+    - name: Set Facts
+      ansible.builtin.set_fact:
         db: IVPDB1
         dbds:
           - IVPDB1
           - IVPDB1I
-        #psb: DFSIVP1
+        # psb: DFSIVP1
         psb: IVTNOMPL
 
     - name: Create temporary directory for the JCL
@@ -20,11 +21,11 @@
       delegate_to: localhost
 
     # DBDGEN loop
-    # - name: create DBDs
-    #   include_tasks: DBDGEN.yml
-    #   loop: "{{ dbds }}"
-    #   loop_control:
-    #     loop_var: dbd
+    - name: Create DBDs
+      ansible.builtin.include_tasks: DBDGEN.yml
+      loop: "{{ dbds }}"
+      loop_control:
+        loop_var: dbd
 
     # PSBGEN
     # - name: Compile templates and put results in temporary directory

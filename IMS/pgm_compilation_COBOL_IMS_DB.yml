@@ -30,6 +30,10 @@
           - "{{ imsout1.ims_output[0].type_2_response[0] }}"
 
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
+    - name: Copy a local progam file to a data set
+      ibm.ibm_zos_core.zos_copy:
+        src: ./programs/{{ pgmtocompile }}.cbl
+        dest: AYMERIC.IMS.SOURCES({{ pgmtocompile }})
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
         src: "./templates/COIMSDB.j2"

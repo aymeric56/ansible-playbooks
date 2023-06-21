@@ -16,13 +16,13 @@
 
   tasks:
     # Copy le .war dans le répertoire du serveur
-    - name: Copy file in the apps directory
+    - name: Copy file in the apps directory {{ wartodeploy }}
       ansible.builtin.copy:
         src: ./war/{{ wartodeploy }}.war
         dest: /var/zosconnect/servers/MOPZCEW/apps
         mode: '0644'
 
-    - name: Add the webApplication to the config
+    - name: Add the webApplication to the config with context {{ pathContextRoot }}
       ibm.ibm_zos_core.zos_lineinfile:
         src: /var/zosconnect/servers/MOPZCEW/server.xml
         encoding: ISO8859-1

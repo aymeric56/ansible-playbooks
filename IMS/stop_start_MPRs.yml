@@ -1,0 +1,74 @@
+---
+- name: Playbook de compilation IMS
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    - name: We look for active regions
+      ibm.ibm_zos_ims.ims_command:
+        command: DISPLAY ACT
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+    - name: Resultat de display
+      ansible.builtin.debug:
+        msg:
+          - "Message de sortie": "{{ imsout1.msg }}"
+          - "{{ imsout1.ims_output[0].type_1_response[0].msg_data }}"
+
+    - name: Define Variable
+      ansible.builtin.set_fact:
+        myregions: "{{ imsout1.ims_output[0].type_1_response[0].msg_data | select('search', 'IMC1MSG') }}"
+
+    - name: Resultat de display myregions2
+      ansible.builtin.debug:
+        msg:
+          - "region number": "{{ item | split('IMC1MSG') | first | split | last }}"
+          - "name of the region": "{{ item | split('TP') | first | split | last }}"
+      loop: "{{ myregions }}"
+
+    - name: We stop active regions
+      ibm.ibm_zos_ims.ims_command:
+        command: STOP REGION {{ item | split('IMC1MSG') | first | split | last }}
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+      loop: "{{ myregions }}"
+
+    - name: Sleep for 5 seconds and continue with play
+      ansible.builtin.wait_for:
+        timeout: 5
+      delegate_to: localhost
+
+    - name: We start regions
+      ibm.ibm_zos_ims.ims_command:
+        command: START REGION IMC1MSG JOBNAME {{ item | split('TP') | first | split | last }}
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+      loop: "{{ myregions }}"
+
+    - name: We look for active regions
+      ibm.ibm_zos_ims.ims_command:
+        command: DISPLAY ACT
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+    - name: Resultat de display
+      ansible.builtin.debug:
+        msg: "{{ imsout1.ims_output[0].type_1_response[0].msg_data }}"
+
+    # - name: Resultat de display
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "myregions first": "{{ myregions | first }}"
+    #       - "myregions max": "{{ myregions | max }}"
+    #       - "myregions max": "{{ myregions | last }}"
+    #       - "myregions length": "{{ myregions | length }}"
+    #       - "myregions2": "{{ myregions2 }}"
+    #       # - "myregions": "{{ myregions[1] | split }}"
