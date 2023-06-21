@@ -22,7 +22,7 @@
       ansible.builtin.set_fact:
         myregions: "{{ imsout1.ims_output[0].type_1_response[0].msg_data | select('search', 'IMC1MSG') }}"
 
-    - name: Resultat de display myregions2
+    - name: Resultat de display myregions
       ansible.builtin.debug:
         msg:
           - "region number": "{{ item | split('IMC1MSG') | first | split | last }}"
@@ -61,7 +61,7 @@
       ignore_errors: true
     - name: Resultat de display
       ansible.builtin.debug:
-        msg: "{{ imsout1.ims_output[0].type_1_response[0].msg_data }}"
+        msg: "{{ imsout1.ims_output[0].type_1_response[0].msg_data | select('search', 'IMC1MSG') }}"
 
     # - name: Resultat de display
     #   ansible.builtin.debug:

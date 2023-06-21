@@ -1,8 +1,6 @@
 ---
 - name: Deplay a war API Provider on z/OS Connect server
   hosts: zt01
-  # collections:
-  #   - ibm.ibm_zos_core
   gather_facts: false
   environment: "{{ environment_vars }}"
 
@@ -28,7 +26,8 @@
     #     encoding: ISO8859-1
     #     regexp: '{{ warToDeploy }}'
     #     insertafter: 'webApplication '
-    #     line: '    <webApplication id="{{ warToDeploy }}" name="{{ warToDeploy }}" location="/var/zosconnect/servers/MOPZCEW/apps/{{ warToDeploy }}.war" context-root="{{ pathContextRoot }}"/>'
+    #     line: '    <webApplication id="{{ warToDeploy }}" name="{{ warToDeploy }}" location="/var/zosconnect/servers/MOPZCEW/apps/{{ warToDeploy }}.war"
+    #                context-root="{{ pathContextRoot }}"/>'
 
     # Execute an operator command to refresh the serveur apps
     - name: Refresh Server Apps
