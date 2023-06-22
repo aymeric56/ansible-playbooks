@@ -52,6 +52,15 @@
       ignore_errors: true
       loop: "{{ myregions }}"
 
+    # - name: We start regions manually
+    #   ibm.ibm_zos_ims.ims_command:
+    #     command: START REGION IMC1MSG JOBNAME {{ item }}
+    #     plex: IMSC
+    #     route: IMC1
+    #   register: imsout1
+    #   ignore_errors: true
+    #   loop: [IMC1MSG1, IMC1MSG2, IMC1MSG3]
+
     - name: We look for active regions
       ibm.ibm_zos_ims.ims_command:
         command: DISPLAY ACT

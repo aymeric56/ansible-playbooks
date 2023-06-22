@@ -121,6 +121,7 @@
             route: IMC1
             register: imsout2
       ignore_errors: true
+      register: outolc
     - name: Resultat de Online Change
       ansible.builtin.debug:
         msg:
