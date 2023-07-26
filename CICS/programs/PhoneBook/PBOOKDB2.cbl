@@ -465,7 +465,7 @@
                  MOVE LENGTH OF API00P01-responseCode200 TO
                     WS-ELEMENT-LENGTH
 
-      * R©cupÛre les donn©es du code retour 200
+      * Récupère les données du code retour 200
                  CALL BAQ-GETN-NAME USING
                          BY REFERENCE BAQ-ZCONNECT-AREA
                          responseCode200-dataarea
@@ -487,6 +487,10 @@
                  END-IF
 
               END-IF
+      *    ELSE
+      * On est dans le cas ou nous n'avons pas pu faire l'archivage
+      * du contact
+      *    EXEC CICS ABEND ABCODE('BCDE')      
            END-IF.
 
        C-999.
