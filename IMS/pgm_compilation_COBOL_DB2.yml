@@ -41,6 +41,7 @@
         encoding:
           from: UTF-8
           to: IBM-1140
+        force: true
         remote_src: false
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
