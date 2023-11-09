@@ -37,3 +37,7 @@
 - list user
 
 `ansible-playbook -i inventories zOS/list_user.yml`
+`ansible-playbook -i inventories zOS/command_on_list_users.yml`
+- operator command
+
+`ansible-playbook -i inventories zOS/opercmd.yml`

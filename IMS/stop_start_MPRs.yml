@@ -1,5 +1,5 @@
 ---
-- name: Playbook de compilation IMS
+- name: Playbook d'administration IMS
   hosts: zt01
   gather_facts: false
   environment: "{{ environment_vars }}"

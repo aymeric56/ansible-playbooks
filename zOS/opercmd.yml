@@ -1,0 +1,15 @@
+---
+- name: Dislay processes
+  hosts: zac
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    - name: Execute Operator Command
+      ibm.ibm_zos_core.zos_operator:
+        cmd: 'd a,l'
+      register: result
+
+    - name: Show display
+      ansible.builtin.debug:
+        msg: "{{ result.content }}"

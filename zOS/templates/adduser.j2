@@ -1,0 +1,46 @@
+//ADDZTEC2 JOB CLASS=A,MSGLEVEL=(1,1),MSGCLASS=H,                   
+//         NOTIFY=&SYSUID,REGION=0M                                 
+/*JOBPARM S=*                                                       
+//IKJEFT01 EXEC PGM=IKJEFT01                                        
+//SYSTSPRT DD  SYSOUT=*                                             
+//SYSRACF  DD  DSN=SYS1.RACFP,DISP=SHR                              
+//SYSLBC   DD  DSN=SYS1.BRODCAST,DISP=SHR                           
+//SYSTSIN  DD  *                                                    
+  DD 'ENSISA00.**'                                                  
+  DU  ENSISA00                                                      
+  AU  ENSISA00 PASSWORD(WAM0ZART) NAME('Student zTEC') +            
+    DFLTGRP(ZTECU1) OWNER(USERIDS) +                                
+    TSO(PROC(DBAUSER) ACCTNUM(SYS0000) SIZE(240000) MAXSIZE(0) +    
+      UNIT(SYSALLDA) USERDATA(0000) ) +                             
+    OMVS(UID(000001080) HOME('/u/ensisa00') PROGRAM('/bin/sh'))     
+  AD        'ENSISA00.**' DFP(RESOWNER(USERIDS)) UACC(R)            
+  PE 'ENSISA00.**' ID(SYSPROG) ACC(A)                               
+  CO  ENSISA00 GRO(CICSUSR)                                         
+  CO  ENSISA00 GRO(DB2USR)                                          
+  CO  ENSISA00 GRO(WASUSR)                                          
+                                                                    
+//IDCAMS EXEC PGM=IDCAMS                                            
+//SYSPRINT DD  SYSOUT=*                                             
+//SYSIN    DD  *                                                    
+  DEFINE ALIAS(NAME(ENSISA00) REL(SYS1.UCAT.Z00U00))                
+  DEFINE CLUSTER(NAME(ENSISA00.ZT00PLEX.ZFS) LINEAR CYL(1 1) SHR(3))
+//IOEAGFMT EXEC PGM=IOEAGFMT,                                       
+//      PARM=('-aggregate ENSISA00.ZT00PLEX.ZFS -compat ')          
+//SYSPRINT DD  SYSOUT=*                                             
+//STDOUT   DD  *                                                    
+//STDERR   DD  *                                                    
+//*                                                                 
+//*                                                                 
+//USSCHOWN  EXEC PGM=BPXBATCH,                                      
+//  PARM='SH chown -R ENSISA00 /u/ensisa00'                         
+//SYSPRINT DD  SYSOUT=*                                             
+//STDOUT   DD  *                                                    
+//STDERR   DD  *                                                    
+//*                                                                 
+//*                                                                 
+//USSCHMOD  EXEC PGM=BPXBATCH,                                      
+//  PARM='SH chmod -R 755 /u/ensisa00'                              
+//SYSPRINT DD  SYSOUT=*                                             
+//STDOUT   DD  *                                                    
+//STDERR   DD  *                                                    
+//*                                                                 

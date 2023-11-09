@@ -1,5 +1,7 @@
 ---
 - name: Add resources in CICS for z/OS Connect API Requester
+  # https://www.ibm.com/docs/en/zos-connect/zos-connect/3.0?topic=requesters-configuring-cics-access-zos-connect-call-apis
+  # BAQHCSD CSD is provided in the hlq.SBAQSAMP data set
   hosts: zt01
   # collections:
   #   - ibm.ibm_zos_core

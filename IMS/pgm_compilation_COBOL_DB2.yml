@@ -46,15 +46,14 @@
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
         src: "./templates/COIMSDB2_coprocessor.j2"
-        dest: "{{ temp_file_path.path }}/COIMSDB2.j2"
+        dest: "{{ temp_file_path.path }}/COIMSDB2_coprocessor.j2"
         output_encoding: "ASCII"
         mode: '0644'
       delegate_to: localhost
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COIMSDB2.j2"
+        src: "{{ temp_file_path.path }}/COIMSDB2_coprocessor.j2"
         location: LOCAL
-        wait: true
         wait_time_s: 2
         return_output: true
         encoding:
@@ -71,4 +70,21 @@
       register: outputcompil
     - name: Output Compil
       ansible.builtin.debug:
-        msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        # msg: "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+        msg:
+          - "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[2] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[3] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[4] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[5] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[6] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[7] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[8] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[9] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[10] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[11] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[12] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[13] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[14] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[15] }}"
+        # msg: "{{ outputcompil }}"

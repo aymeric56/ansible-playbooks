@@ -36,7 +36,6 @@
       ignore_errors: true
       register: webapp
 
-
     # # Execute an operator command to refresh the serveur apps
     # - name: Refresh Server Apps
     #   ibm.ibm_zos_core.zos_operator:
@@ -68,7 +67,6 @@
     # - name: Show messages.log
     #   ansible.builtin.debug:
     #     msg: "{{ grepoutput.stdout_lines }}"
-
 
     #############################################################################################################################
 

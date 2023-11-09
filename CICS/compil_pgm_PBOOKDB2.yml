@@ -78,7 +78,23 @@
       register: outputcompil
     - name: Display job log
       ansible.builtin.debug:
-        msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        # msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        msg:
+          - "{{ outputcompil.jobs[0].ddnames[0].content[1] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[2] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[3] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[4] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[5] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[6] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[7] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[8] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[9] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[10] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[11] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[12] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[13] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[14] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[15] }}"
       ignore_errors: true
       register: ignore_errors_register
 
