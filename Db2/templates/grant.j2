@@ -1,0 +1,23 @@
+//GRANTDB2  JOB MSGLEVEL=1,REGION=0M,NOTIFY=&SYSUID,CLASS=A,MSGCLASS=H
+//*
+//   EXPORT SYMLIST=*
+//*  SET PARMS FOR THIS COMPILE:
+//*  ---------------------------
+//   SET COLLE={{ collection }}               COLLECTION
+//   SET DB2={{ db2sub }}                     DB2 sub system
+//*   SET DB2=DBC1
+//*
+//*  *************************************************************
+//*        GRANT Package dans Db2
+//*  *************************************************************
+//BIND     EXEC PGM=IKJEFT01,DYNAMNBR=20
+//SYSTSPRT  DD SYSOUT=*
+//SYSPRINT  DD SYSOUT=*
+//SYSIN     DD *,SYMBOLS=EXECSYS
+   GRANT CREATE IN COLLECTION &COLLE. TO PUBLIC;
+/*
+//SYSTSIN   DD *,SYMBOLS=EXECSYS
+DSN SYSTEM(&DB2.)
+RUN  PROGRAM(DSNTIAD) PLAN(DSNTIA12) -
+      LIB('DBC0CFG.RUNLIB.LOAD')
+/*

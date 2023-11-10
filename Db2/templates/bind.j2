@@ -1,0 +1,31 @@
+//BINDDB2  JOB MSGLEVEL=1,REGION=0M,NOTIFY=&SYSUID,CLASS=A,MSGCLASS=H
+//*
+//   EXPORT SYMLIST=*
+//*  SET PARMS FOR THIS COMPILE:
+//*  ---------------------------
+//   SET MEM={{ pgmtocompile }}               PROGRAM NAME = PACKAGE & PLAN
+//   SET DSPREFIX={{ dsprefix }}              DS PREFIX pour les DBRM
+//   SET COLLE={{ collection }}               COLLECTION
+//   SET SCHEMA={{ schema }}                  SCHEMA de la table
+//   SET DB2={{ db2sub }}                     DB2 sub system
+//*   SET DB2=DBC1
+//*
+//*  *************************************************************
+//*        BIND Package dans Db2
+//*  *************************************************************
+//BIND     EXEC PGM=IKJEFT01,DYNAMNBR=20
+//DBRMLIB   DD DISP=SHR,DSN=&DSPREFIX..DBRMLIB.DATA
+//SYSTSPRT  DD SYSOUT=*
+//SYSPRINT  DD SYSOUT=*
+//SYSIN     DD *,SYMBOLS=EXECSYS
+   GRANT BIND, EXECUTE ON PLAN &MEM. TO PUBLIC;
+/*
+//*   GRANT BIND, EXECUTE ON PACKAGE &MEM..* TO PUBLIC;
+//SYSTSIN   DD *,SYMBOLS=EXECSYS
+DSN SYSTEM(&DB2.)
+   BIND PACKAGE(&COLLE.) MEMBER(&MEM.) -
+        ISOLATION(UR) QUALIFIER(&SCHEMA.)
+   BIND PLAN(&MEM.) PKLIST(&COLLE..*)
+RUN  PROGRAM(DSNTIAD) PLAN(DSNTIA12) -
+      LIB('DBC0CFG.RUNLIB.LOAD')
+/*

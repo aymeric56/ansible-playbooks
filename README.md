@@ -24,6 +24,12 @@
 
 `ansible-playbook -i inventories -e @secrets.enc --vault-password-file password_file CICS/add_resources_zCEE_API-Requester.yml`
 
+## Db2
+- bind or grant on Db2 sub system
+
+`ansible-playbook -i inventories Db2/bind_Db2.yml`
+`ansible-playbook -i inventories Db2/grant_Db2.yml`
+
 ## z/OS Connect
 - add API Provider
 
