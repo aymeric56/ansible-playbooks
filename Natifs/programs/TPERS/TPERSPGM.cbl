@@ -2,9 +2,6 @@
       * PROGRAMME DE TEST DB2 = SIMPLE SELECT DANS UNE TABLE DB2
       ****************************************************************
       * PROGRAM:  TPERSPGM
-      *
-      * AUTHOR :  Stephane PAUCOT
-      *
       *****************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. TPERSPGM.
