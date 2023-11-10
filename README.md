@@ -28,6 +28,7 @@
 - bind or grant on Db2 sub system
 
 `ansible-playbook -i inventories Db2/bind_Db2.yml`
+
 `ansible-playbook -i inventories Db2/grant_Db2.yml`
 
 ## z/OS Connect
@@ -43,6 +44,7 @@
 - list user
 
 `ansible-playbook -i inventories zOS/list_user.yml`
+
 `ansible-playbook -i inventories zOS/command_on_list_users.yml`
 - operator command
 

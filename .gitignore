@@ -3,6 +3,7 @@
 password_file
 secrets.enc
 zapp.yaml
+ansible.code-workspace
 
 # OS generated files #
 ######################
