@@ -1,19 +1,16 @@
        CBL CICS('COBOL3') APOST
       *****************************************************************
       *                                                               *
-      *  MODULE NAME = PBOOKDB2                                       *
+      *  MODULE NAME = PBOOKDBN                                       *
       *                                                               *
       *  DESCRIPTIVE NAME = CICS TS  (Samples) Example Application -  *
       *                     Phone Book Program                        *
-      *                                                               *
+      *    Changement de sous programme pour le test API Requester    *
+      *    de l'application node-rest-api                             *
       *                                                               *
       *  STATUS = 1.0.0                                               *
       *                                                               *
       *  TRANSACTION NAME = n/a                                       *
-      *                                                               *
-      *  FUNCTION =                                                   *
-      *  This module is the controller for the PhoneBook application, *
-      *  all requests pass through this module                        *
       *                                                               *
       *-------------------------------------------------------------  *
       *                                                               *
@@ -27,7 +24,7 @@
       *                                                               *
       *****************************************************************
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. PBOOKDB2.
+       PROGRAM-ID. PBOOKDBN.
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
        DATA DIVISION.
@@ -80,10 +77,10 @@
        COPY BAQHCONC.
 
       * The API to call
-       COPY API00I01.
+       COPY NOD00I01.
 
       * The request data to send to the API endpoint
-       COPY API00Q01.
+       COPY NOD00Q01.
 
       * Pointer to API-INFO structure
        01 WS-API-INFO        USAGE POINTER VALUE NULL.
@@ -117,7 +114,7 @@
 
       * Pour API Requester
       * The response data received from the API endpoint
-       COPY API00P01.
+       COPY NOD00P01.
 
       ******************************************************************
       *    P R O C E D U R E S
@@ -130,7 +127,7 @@
       *---------------------------------------------------------------*
       * Get the input data from the supplied container                *
       *---------------------------------------------------------------*
-           DISPLAY EIBTRNID ' Je suis au début de PBOOKDB2'
+           DISPLAY EIBTRNID ' Je suis au début de PBOOKDBN'
            INITIALIZE CONTAINER-PBOOK-INPUT
 
            EXEC CICS GET CONTAINER('PBOOK-INPUT')
@@ -140,7 +137,7 @@
            END-EXEC
 
            IF WS-RESP NOT EQUAL DFHRESP(NORMAL)
-               DISPLAY 'Je suis dans GET Container problème'
+               DISPLAY 'Je suis dans GET Container problÛme'
       *        Set up the Error message for the response
                MOVE 'App Internal Error: Get Container'
                    TO responseMessage OF messageOutput1
@@ -229,7 +226,7 @@
                MOVE command of messageInput TO command of messageOutput1
                PERFORM DISPLAY-SQL-CODE
              When Other
-               MOVE 'Snif: problÛme !' TO responseMessage
+               MOVE 'Snif: problème !' TO responseMessage
                  OF messageOutput1
                PERFORM DISPLAY-SQL-CODE
            END-Evaluate.
@@ -287,44 +284,9 @@
       *----------------------------------------------------------------*
        DELETE-CONTACT SECTION.
            MOVE lastName OF messageInput TO C-Lastname
-      * On r©cupÛre d'abord tous les attributs pour archivage
-           EXEC SQL
-               SELECT LASTNAME,
-                      FIRSTNAME,
-                      PHONE,
-                      ZIPCODE
-               INTO  :C-Lastname,
-                     :C-Firstname,
-                     :C-Phone,
-                     :C-zipCode
-               FROM CONTACTS
-                 WHERE LASTNAME = :C-Lastname
-           END-EXEC.
-      * On delete
-           EXEC SQL DELETE FROM CONTACTS WHERE LASTNAME = :C-Lastname
-           END-EXEC
 
-           Evaluate SQLCODE
-             When 0
-               MOVE 'C''est fait !' TO responseMessage
-                 OF messageOutput1
-               MOVE C-Lastname  TO lastName of messageOutput1
-               MOVE C-Firstname TO firstName of messageOutput1
-               MOVE C-Phone     TO telExtension of messageOutput1
-               MOVE C-zipCode   TO zipCode of messageOutput1
-               MOVE command of messageInput TO command of messageOutput1
-               PERFORM CALL-API
-             When 100
-      * 100 = successful mais pas de ligne retourn©e
-               MOVE 'Inconnu au bataillon !' TO responseMessage
-                 OF messageOutput1
-               MOVE command of messageInput TO command of messageOutput1
-               PERFORM DISPLAY-SQL-CODE
-             When Other
-               MOVE 'Snif: problÛme !' TO responseMessage
-                 OF messageOutput1
-               PERFORM DISPLAY-SQL-CODE
-           END-Evaluate.
+      * on appel l'API node-rest-api
+           PERFORM CALL-API
 
            EXEC CICS PUT CONTAINER('PBOOK-OUTPUT1')
                      FROM(messageOutput1)
@@ -391,39 +353,17 @@
        C-PROCESS SECTION.
        C-010.
       * Prepare the request for sending
-           MOVE 1 TO lastName-existence of requestBody.
-           MOVE C-Lastname TO lastName2 of requestBody.
-           MOVE LENGTH OF lastName2 of requestBody
-                       TO lastName2-length of requestBody.
 
-           MOVE 1 TO firstName-existence of requestBody.
-           MOVE C-Firstname TO firstName2 of requestBody.
-           MOVE LENGTH OF firstName2 of requestBody
-                       TO firstName2-length of requestBody.
-
-           MOVE 1 TO telExtension-existence of requestBody.
-           MOVE C-Phone  TO telExtension2 of requestBody.
-           MOVE LENGTH OF telExtension2 of requestBody
-                       TO telExtension2-length of requestBody.
-
-           MOVE 1 TO zipCode-existence of requestBody.
-           MOVE C-zipCode TO zipCode2 of requestBody.
-           MOVE LENGTH OF zipCode2 of requestBody
-                       TO zipCode2-length of requestBody.
 
       *     SET WS-API-INFO TO ADDRESS OF BAQ-API-INFO-RBK02I01.
-           SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-API00Q01.
-           MOVE LENGTH OF BAQBASE-API00Q01 TO BAQ-REQ-BASE-LENGTH.
-
-      *     DISPLAY 'longeur input data : ' BAQ-REQ-BASE-LENGTH.
-      *     DISPLAY 'lastname : ' lastName2 of requestBody.
-      *     DISPLAY 'firstname : ' firstName2 of requestBody.
+           SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-NOD00Q01.
+           MOVE LENGTH OF BAQBASE-NOD00Q01 TO BAQ-REQ-BASE-LENGTH.
 
        C-020.
       * Call the API
            CALL BAQ-EXEC-NAME USING
                            BY REFERENCE BAQ-ZCONNECT-AREA
-                           BY REFERENCE BAQ-API-INFO-API00I01
+                           BY REFERENCE BAQ-API-INFO-NOD00I01
                            BY REFERENCE BAQ-REQUEST-AREA
                            BY REFERENCE BAQ-RESPONSE-AREA.
 
@@ -453,16 +393,21 @@
 
        C-030.
       * Successful call, address the base structure
-           SET ADDRESS OF BAQBASE-API00P01 to BAQ-RESP-BASE-ADDRESS.
+           SET ADDRESS OF BAQBASE-NOD00P01 to BAQ-RESP-BASE-ADDRESS.
 
       * The RESTful API has returned but the HTTP Status Code could
       * be 200 (OK) to indicate a successful return
 
            IF BAQ-RESP-STATUS-CODE EQUAL 200 THEN
-      *        DISPLAY 'C est bon code retour : ' BAQ-RESP-STATUS-CODE
+      *       DISPLAY 'C est bon code retour : ' BAQ-RESP-STATUS-CODE
+              DISPLAY 'Set Cookie existence : ' Set-Cookie-existence
+              DISPLAY 'Set Cookie2 length : ' Set-Cookie2-length
+              DISPLAY 'Set Cookie2 : ' Set-Cookie2
+              DISPLAY 'resCode200existence : ' responseCode200-existence
+              DISPLAY 'resCode200-dataarea : ' responseCode200-dataarea
               IF responseCode200-existence > 0 THEN
 
-                 MOVE LENGTH OF API00P01-responseCode200 TO
+                 MOVE LENGTH OF NOD00P01-responseCode200 TO
                     WS-ELEMENT-LENGTH
 
       * Récupère les données du code retour 200
@@ -479,11 +424,12 @@
                     DISPLAY ' GETN Reason Code ' WS-RC9
                     DISPLAY BAQ-ZCON-RETURN-MESSAGE
                  ELSE
-                       SET ADDRESS OF API00P01-responseCode200 to
-                                                 WS-ELEMENT
+                    SET ADDRESS OF NOD00P01-responseCode200 to
+                                              WS-ELEMENT
       *                 DISPLAY 'Xid2 : ' Xid2
-                       MOVE 'ARCHIVED' TO command OF messageOutput1
-                       MOVE Xid2 TO responseMessage OF messageOutput1
+                    MOVE 'ARCHIVED' TO command OF messageOutput1
+                    MOVE XStatus2 TO lastName OF messageOutput1
+                   MOVE Set-Cookie2 TO responseMessage OF messageOutput1
                  END-IF
 
               END-IF
@@ -506,7 +452,7 @@
       *        DISPLAY ' FREE Reason Code ' WS-RC9
       *        DISPLAY BAQ-ZCON-RETURN-MESSAGE
       *     END-IF.
-      *     DISPLAY 'Je suis à la fin du FREE : X-FREE'.
+      *     DISPLAY 'Je suis ë la fin du FREE : X-FREE'.
       *     EXIT.
       *----------------------------------------------------------------*
       * X-TERM
@@ -632,7 +578,7 @@
                     SET NUMTOSTRING9 TO OUT-REC-IDX
                  END-IF
                  STRING NUMTOSTRINGX DELIMITED BY SPACE
-                       ' contacts trouvé(s)' DELIMITED BY SIZE
+                       ' contacts trouvée(s)' DELIMITED BY SIZE
                   INTO responseMessage OF messageOutput2
               WHEN OTHER
                  DISPLAY 'SHOW50-CONTACTS - BAD SQLCODE : '

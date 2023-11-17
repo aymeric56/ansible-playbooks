@@ -95,6 +95,11 @@
           - "{{ outputcompil.jobs[0].ddnames[0].content[13] }}"
           - "{{ outputcompil.jobs[0].ddnames[0].content[14] }}"
           - "{{ outputcompil.jobs[0].ddnames[0].content[15] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[16] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[17] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[18] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[19] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[20] }}"
       ignore_errors: true
       register: ignore_errors_register
 
