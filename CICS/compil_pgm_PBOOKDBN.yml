@@ -29,15 +29,18 @@
 
     - name: Copy local progam files to a PDS member
       loop:
-        - { membre: 'NOD00I01', fichier: 'NOD00I01.cpy' }
-        - { membre: 'NOD00P01', fichier: 'NOD00P01.cpy' }
-        - { membre: 'NOD00Q01', fichier: 'NOD00Q01.cpy' }
-        - { membre: 'BAQHAREC', fichier: 'BAQHAREC.cpy' }
-        - { membre: 'BAQHCONC', fichier: 'BAQHCONC.cpy' }
-        - { membre: 'BAQRINFO', fichier: 'BAQRINFO.cpy' }
-        - { membre: 'PBOOKCIN', fichier: 'PBOOKCIN.cpy' }
-        - { membre: 'PBOOKCO1', fichier: 'PBOOKCO1.cpy' }
-        - { membre: 'PBOOKCO2', fichier: 'PBOOKCO2.cpy' }
+        # - { membre: 'NOD00I01', fichier: 'NOD00I01.cpy' }
+        # - { membre: 'NOD00P01', fichier: 'NOD00P01.cpy' }
+        # - { membre: 'NOD00Q01', fichier: 'NOD00Q01.cpy' }
+        # - { membre: 'NOD01I01', fichier: 'NOD01I01.cpy' }
+        # - { membre: 'NOD01P01', fichier: 'NOD01P01.cpy' }
+        # - { membre: 'NOD01Q01', fichier: 'NOD01Q01.cpy' }
+        # - { membre: 'BAQHAREC', fichier: 'BAQHAREC.cpy' }
+        # - { membre: 'BAQHCONC', fichier: 'BAQHCONC.cpy' }
+        # - { membre: 'BAQRINFO', fichier: 'BAQRINFO.cpy' }
+        # - { membre: 'PBOOKCIN', fichier: 'PBOOKCIN.cpy' }
+        # - { membre: 'PBOOKCO1', fichier: 'PBOOKCO1.cpy' }
+        # - { membre: 'PBOOKCO2', fichier: 'PBOOKCO2.cpy' }
         - { membre: 'PBOOKDBN', fichier: 'PBOOKDBN.cbl' }
       ibm.ibm_zos_core.zos_copy:
         src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/CICS/programs/PhoneBook/{{ item.fichier }}

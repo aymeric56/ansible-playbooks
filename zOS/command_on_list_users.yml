@@ -12,7 +12,7 @@
           # - GLASMAY
           # - PICARD
           # - PAUCOT
-          # - ENSIS00
+           - ENSIS00
           # - ENSIS01
           # - ENSIS02
           # - ENSIS03
@@ -42,7 +42,7 @@
           # - ENSIS27
           # - ENSIS28
           # - ENSIS29
-          # - ENSIS30
+           - ENSIS30
           # - ENSIS31
           # - ENSIS32
           # - ENSIS33
@@ -52,15 +52,15 @@
           # - ENSIS37
           # - ENSIS38
           # - ENSIS39
-          - ZTECU01
-          - ZTECU02
-          - ZTECU03
-          - ZTECU04
-          - ZTECU05
-          - ZTECU06
-          - ZTECU07
-          - ZTECU08
-          - ZTECU09
+          # - ZTECU01
+          # - ZTECU02
+          # - ZTECU03
+          # - ZTECU04
+          # - ZTECU05
+          # - ZTECU06
+          # - ZTECU07
+          # - ZTECU08
+          # - ZTECU09
           # - ZTECU10
           # - ZTECU11
           # - ZTECU12

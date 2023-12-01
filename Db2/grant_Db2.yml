@@ -6,6 +6,9 @@
 
 # -------
 # RAPPEL: PLAN -> COLLECTION -> PACKAGE
+# pour autorisation à bind:
+#   GRANT BINDADD TO ENSIS00 WITH GRANT OPTION;
+#   GRANT CREATE IN COLLECTION CLENSISA TO ENSIS00;
 # -------
 
   vars:

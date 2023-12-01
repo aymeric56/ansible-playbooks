@@ -1,11 +1,11 @@
       * ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       * This file contains the generated language structure(s) for
-      *  request JSON schema 'get Status Server_request.json'.
+      *  request JSON schema 'get Second Appel_request.json'.
       * This structure was generated using 'DFHJS2LS' at mapping level
       *  '5.0'.
       * 
       *  
-      *   01 BAQBASE-NOD00Q01.
+      *   01 BAQBASE-NOD01Q01.
       *     03 requestCookies.
       * 
       * Comments for field 'CookTest':
@@ -33,7 +33,7 @@
       *  
       * ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  
-          01 BAQBASE-NOD00Q01.
+          01 BAQBASE-NOD01Q01.
             03 requestCookies.
               06 CookTest-length               PIC S9999 COMP-5 SYNC.
               06 CookTest                      PIC X(300).

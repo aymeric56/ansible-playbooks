@@ -39,6 +39,19 @@
            03 WS-RETURN-CODE           PIC S9(8) COMP.
            03 DISP-SQLCODE             PIC +ZZZZZZZZ9.
            03 KeyLastname              PIC X(10).
+           03 Nbr-Cookies              PIC S9999 COMP-5 SYNC.
+           03 Cookie-Tmp1              PIC X(300).
+           03 Cookie-Assemblage        PIC X(300).
+           03 CTR-C-Corps              PIC S9999 COMP-5 SYNC.
+           03 Cookie-Entete            PIC X(30).
+           03 I                        PIC 9(02) VALUE 0.
+
+      * Variables used for cookies
+       01  Cookies.
+           03 Cookie              OCCURS 3 TIMES  PIC X(300).
+       01  CTR-Cookies-Entete.
+           03 CTR-C-Entete        OCCURS 3 TIMES  PIC S9999 COMP-5 SYNC.
+              
 
       * Variables used with Db2 for table contacts
        01  CONTACT-DETAILS.
@@ -78,9 +91,11 @@
 
       * The API to call
        COPY NOD00I01.
+       COPY NOD01I01.
 
       * The request data to send to the API endpoint
        COPY NOD00Q01.
+       COPY NOD01Q01.
 
       * Pointer to API-INFO structure
        01 WS-API-INFO        USAGE POINTER VALUE NULL.
@@ -115,6 +130,7 @@
       * Pour API Requester
       * The response data received from the API endpoint
        COPY NOD00P01.
+       COPY NOD01P01.
 
       ******************************************************************
       *    P R O C E D U R E S
@@ -137,7 +153,7 @@
            END-EXEC
 
            IF WS-RESP NOT EQUAL DFHRESP(NORMAL)
-               DISPLAY 'Je suis dans GET Container problÛme'
+               DISPLAY 'Je suis dans GET Container problème'
       *        Set up the Error message for the response
                MOVE 'App Internal Error: Get Container'
                    TO responseMessage OF messageOutput1
@@ -353,14 +369,15 @@
        C-PROCESS SECTION.
        C-010.
       * Prepare the request for sending
-
-
+           DISPLAY EIBTRNID ' Après Init Socket - Avant 1er Call'
+           INITIALIZE BAQBASE-NOD00Q01.
+           INITIALIZE BAQBASE-NOD01Q01.
       *     SET WS-API-INFO TO ADDRESS OF BAQ-API-INFO-RBK02I01.
            SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-NOD00Q01.
            MOVE LENGTH OF BAQBASE-NOD00Q01 TO BAQ-REQ-BASE-LENGTH.
 
        C-020.
-      * Call the API
+      * Call the API 1er Appel
            CALL BAQ-EXEC-NAME USING
                            BY REFERENCE BAQ-ZCONNECT-AREA
                            BY REFERENCE BAQ-API-INFO-NOD00I01
@@ -398,14 +415,106 @@
       * The RESTful API has returned but the HTTP Status Code could
       * be 200 (OK) to indicate a successful return
 
+      * On a les headers et le code retour
            IF BAQ-RESP-STATUS-CODE EQUAL 200 THEN
       *       DISPLAY 'C est bon code retour : ' BAQ-RESP-STATUS-CODE
-              DISPLAY 'Set Cookie existence : ' Set-Cookie-existence
-              DISPLAY 'Set Cookie2 length : ' Set-Cookie2-length
-              DISPLAY 'Set Cookie2 : ' Set-Cookie2
-              DISPLAY 'resCode200existence : ' responseCode200-existence
-              DISPLAY 'resCode200-dataarea : ' responseCode200-dataarea
-              IF responseCode200-existence > 0 THEN
+      
+      * Test d'un deuxième appel pour avoir les cookies et les formater
+      *        DISPLAY 'Set Cookie existence : ' Set-Cookie-existence
+      *        DISPLAY 'Set Cookie2 length : ' Set-Cookie2-length
+      *        DISPLAY 'Set Cookie2 : ' Set-Cookie2
+      *        DISPLAY 'resCode200existence : ' responseCode200-existence
+      *          OF BAQBASE-NOD00P01
+      *        DISPLAY 'resCode200-dataarea : ' responseCode200-dataarea
+      *          OF BAQBASE-NOD00P01
+
+      * On va vite faire le 2ème appel sans regarder la donnée
+
+      * Traitement sur les cookies: on récupère chaque cookie pour 
+      *   traitement ultérieur
+      *        INITIALIZE Cookies 
+      *        INITIALIZE CTR-Cookies-Entete 
+      *        UNSTRING Set-Cookie2 DELIMITED BY ","
+      *          INTO Cookie(1)
+      *               Cookie(2)
+      *               Cookie(3)
+      *               Cookie(4)
+      *          TALLYING IN Nbr-Cookies END-UNSTRING
+      *        DISPLAY 'Nbr-Cookies : ' Nbr-Cookies
+
+      * On traite maintenant chaque Cookie pour population dans NOD01Q01
+      *        PERFORM VARYING I FROM 1 BY 1 UNTIL I>Nbr-Cookies
+      *          UNSTRING Cookie(I) DELIMITED BY ";"
+      *            INTO Cookie-Tmp1 COUNT IN CTR-C-Entete(I)
+      *            END-UNSTRING
+      *          DISPLAY 'Cookie-Tmp1 : ' Cookie-Tmp1(1:CTR-C-Entete(I))
+      *          IF Cookie-Tmp1(1:8) = 'CookTest' THEN
+      *            UNSTRING Cookie-Tmp1 DELIMITED BY "="
+      *              INTO Cookie-Entete
+      *                   CookTest OF BAQBASE-NOD01Q01
+      *              COUNT IN CookTest-length OF BAQBASE-NOD01Q01
+      *            END-UNSTRING
+      *          END-IF 
+      *          IF Cookie-Tmp1(1:12) = 'CookTestPlus' THEN
+      *            UNSTRING Cookie-Tmp1 DELIMITED BY "="
+      *              INTO Cookie-Entete
+      *                   CookTestPlus OF BAQBASE-NOD01Q01
+      *              COUNT IN CookTestPlus-length OF BAQBASE-NOD01Q01
+      *            END-UNSTRING
+      *          END-IF 
+      *        END-PERFORM
+
+      * Première passe pour chercher le premier cookie du .war
+      *        PERFORM VARYING I FROM 1 BY 1 UNTIL I>Nbr-Cookies
+      *          IF Cookie(I)(1:10) = 'DARVA_PERM' THEN
+      *            UNSTRING Cookie(I) DELIMITED BY "="
+      *              INTO Cookie-Entete COUNT IN CTR-C-Entete(I)
+      *                   Cookie-Tmp1
+      *            END-UNSTRING
+      *            UNSTRING Cookie-Tmp1 DELIMITED BY ";"
+      *              INTO DARVA_PERM OF BAQBASE-NOD01Q01
+      *              COUNT IN DARVA_PERM-length OF BAQBASE-NOD01Q01
+      *            END-UNSTRING
+      *          END-IF 
+      *        END-PERFORM
+      * Deuxième passe pour les autres cookies
+      *        PERFORM VARYING I FROM 1 BY 1 UNTIL I>Nbr-Cookies
+      *          IF NOT Cookie(I)(1:10) = 'DARVA_PERM' AND  
+      *             NOT Cookie(I)(1:1) = ' ' THEN
+      *            UNSTRING Cookie(I) DELIMITED BY ";"
+      *              INTO Cookie-Assemblage COUNT IN CTR-C-Corps
+      *            END-UNSTRING
+      *            STRING DARVA_PERM OF BAQBASE-NOD01Q01 
+      *                                                DELIMITED BY SPACE 
+      *              ';' DELIMITED BY SIZE
+      *              Cookie-Assemblage DELIMITED BY SPACE
+      *              INTO DARVA_PERM OF BAQBASE-NOD01Q01
+      *            END-STRING
+      *            ADD 1 TO DARVA_PERM-length OF BAQBASE-NOD01Q01
+      *            ADD CTR-C-Corps TO DARVA_PERM-length 
+      *                                               OF BAQBASE-NOD01Q01
+      *          END-IF
+      *        END-PERFORM
+
+      *        DISPLAY 'CookTestPlus : ' CookTestPlus OF BAQBASE-NOD01Q01
+      *        DISPLAY 'CookTestPlus-length : ' CookTestPlus-length 
+      *                                               OF BAQBASE-NOD01Q01
+
+      *        SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-NOD01Q01
+      *        MOVE LENGTH OF BAQBASE-NOD01Q01 TO BAQ-REQ-BASE-LENGTH
+
+      *        CALL BAQ-EXEC-NAME USING
+      *          BY REFERENCE BAQ-ZCONNECT-AREA
+      *          BY REFERENCE BAQ-API-INFO-NOD01I01
+      *          BY REFERENCE BAQ-REQUEST-AREA
+      *          BY REFERENCE BAQ-RESPONSE-AREA
+
+      *        IF NOT BAQ-SUCCESS THEN
+      *           DISPLAY 'Echec du 2ème Appel'
+      *        END-IF
+
+      * Donnée du premier call
+              IF responseCode200-existence OF BAQBASE-NOD00P01 > 0 THEN
 
                  MOVE LENGTH OF NOD00P01-responseCode200 TO
                     WS-ELEMENT-LENGTH
@@ -413,7 +522,7 @@
       * Récupère les données du code retour 200
                  CALL BAQ-GETN-NAME USING
                          BY REFERENCE BAQ-ZCONNECT-AREA
-                         responseCode200-dataarea
+                         responseCode200-dataarea OF BAQBASE-NOD00P01
                          BY REFERENCE WS-ELEMENT
                          BY REFERENCE WS-ELEMENT-LENGTH
 
@@ -428,7 +537,8 @@
                                               WS-ELEMENT
       *                 DISPLAY 'Xid2 : ' Xid2
                     MOVE 'ARCHIVED' TO command OF messageOutput1
-                    MOVE XStatus2 TO lastName OF messageOutput1
+                    MOVE XStatus2 OF NOD00P01-responseCode200
+                      TO lastName OF messageOutput1
                    MOVE Set-Cookie2 TO responseMessage OF messageOutput1
                  END-IF
 

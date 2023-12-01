@@ -3,8 +3,8 @@
 - name: Execute TSO command list user {{ usertso }}
   ibm.ibm_zos_core.zos_tso_command:
     commands:
-      # - LU {{ usertso }}
-      - alu {{ usertso }} pa(ZTEC4YOU) resume noexp
+      - LU {{ usertso }}
+      # - alu {{ usertso }} pa(ZTEC4YOU) resume noexp
       # - LG {{ usertso }}
   register: display
 
