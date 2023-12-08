@@ -12,7 +12,8 @@
 # -------
 
   vars:
-    collection: 'CLENSISA'
+    # collection: 'CLENSISA'
+    collection: 'CLTELECO'
     db2sub: 'DBC1'
 
   tasks:

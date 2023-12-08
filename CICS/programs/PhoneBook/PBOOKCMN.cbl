@@ -130,7 +130,7 @@
       *     EXEC CICS PUT CONTAINER('PBOOK-OUTPUT1')
       *              FROM(messageOutput1)
       *     END-EXEC
-           EXEC CICS LINK   PROGRAM('PBOOKDB2')
+           EXEC CICS LINK   PROGRAM('PBOOKDBN')
                             CHANNEL('JSONCHANNEL')
            END-EXEC
            EXIT.

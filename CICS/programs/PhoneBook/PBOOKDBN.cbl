@@ -492,13 +492,13 @@
       *            END-STRING
       *            ADD 1 TO DARVA_PERM-length OF BAQBASE-NOD01Q01
       *            ADD CTR-C-Corps TO DARVA_PERM-length 
-      *                                               OF BAQBASE-NOD01Q01
+      *                                              OF BAQBASE-NOD01Q01
       *          END-IF
       *        END-PERFORM
 
-      *        DISPLAY 'CookTestPlus : ' CookTestPlus OF BAQBASE-NOD01Q01
+      *       DISPLAY 'CookTestPlus : ' CookTestPlus OF BAQBASE-NOD01Q01
       *        DISPLAY 'CookTestPlus-length : ' CookTestPlus-length 
-      *                                               OF BAQBASE-NOD01Q01
+      *                                              OF BAQBASE-NOD01Q01
 
       *        SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-NOD01Q01
       *        MOVE LENGTH OF BAQBASE-NOD01Q01 TO BAQ-REQ-BASE-LENGTH
@@ -539,7 +539,18 @@
                     MOVE 'ARCHIVED' TO command OF messageOutput1
                     MOVE XStatus2 OF NOD00P01-responseCode200
                       TO lastName OF messageOutput1
-                   MOVE Set-Cookie2 TO responseMessage OF messageOutput1
+      *            MOVE Set-Cookie2 TO responseMessage OF messageOutput1
+                    DISPLAY 'XStatus-existence : ' XStatus-existence
+                                         OF NOD00P01-responseCode200
+                    DISPLAY 'XStatus2-length : ' XStatus2-length
+                                         OF NOD00P01-responseCode200
+                    DISPLAY 'XStatus2 : ' XStatus2
+                                         OF NOD00P01-responseCode200
+                    DISPLAY 'XDate-existence : ' XDate-existence
+                    DISPLAY 'XDate2-length : ' XDate2-length
+                    DISPLAY 'XDate2 : ' XDate2
+                    MOVE XDate2 OF NOD00P01-responseCode200
+                        TO responseMessage OF messageOutput1
                  END-IF
 
               END-IF

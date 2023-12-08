@@ -12,7 +12,8 @@ app.listen(PORT, () => {
 app.get("/status", (req, res) => {
    console.log("Nouvel appel sur /status");
    const res200 = {
-      "Status": "Running"
+      "Status": "Running",
+      "Date": new Date
    };
    res.cookie('CookTest', 'voila voila');
    res.cookie('CookTestPlus', 'voila.plus.voila');

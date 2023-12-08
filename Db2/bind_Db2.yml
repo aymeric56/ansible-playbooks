@@ -12,7 +12,9 @@
     pgmtocompile: 'SE3PICAR'
     dsprefix: 'ENSISA'
     collection: 'CLENSISA'
+    # collection: 'CLTELECO'
     schema: 'ENSISA'
+    # schema: 'TELECOMN'
     db2sub: 'DBC1'
 
   tasks:

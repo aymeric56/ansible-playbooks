@@ -60,11 +60,30 @@
       *        09 XStatus2-length               PIC S9999 COMP-5 SYNC.
       *        09 XStatus2                      PIC X(255).
       * 
+      *  
+      * JSON schema keyword 'responseCode200->Date' is optional. The
+      *  existence of the field is indicated by field
+      *  'XDate-existence'.
+      *      06 XDate-existence               PIC S9(9) COMP-5 SYNC.
+      * 
+      *  
+      *      06 XDate.
+      * 
+      * Comments for field 'XDate2':
+      * This field represents the value of JSON schema keyword
+      *  'responseCode200->Date'.
+      * JSON schema type: 'string'.
+      * JSON schema keyword 'format' value: 'date-time'.
+      * This field contains a varying length array of characters or
+      *  binary data.
+      *        09 XDate2-length                 PIC S9999 COMP-5 SYNC.
+      *        09 XDate2                        PIC X(40).
+      * 
       * Comments for field 'filler':
       * This is a filler entry to ensure the correct padding for a
       *  structure. These slack bytes do not contain any application
       *  data.
-      *      06 filler                        PIC X(3).
+      *      06 filler                        PIC X(2).
       * 
       *  
       * ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -90,5 +109,11 @@
              06 XStatus.
                09 XStatus2-length               PIC S9999 COMP-5 SYNC.
                09 XStatus2                      PIC X(255).
-             06 filler                        PIC X(3).
+ 
+             06 XDate-existence               PIC S9(9) COMP-5 SYNC.
+ 
+             06 XDate.
+               09 XDate2-length                 PIC S9999 COMP-5 SYNC.
+               09 XDate2                        PIC X(40).
+             06 filler                        PIC X(2).
  
