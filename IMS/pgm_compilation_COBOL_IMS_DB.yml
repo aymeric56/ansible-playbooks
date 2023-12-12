@@ -4,7 +4,7 @@
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
-    pgmtocompile: IVTNOMPL
+    pgmtocompile: IVTNIMS
 
   tasks:
     - name: Create temporary directory for the compilation JCL
@@ -13,27 +13,20 @@
       register: temp_file_path
       delegate_to: localhost
 
-    # We ask IMS to free the program
-    - name: We force MPR to free program ({{ pgmtocompile }})
-      ibm.ibm_zos_ims.ims_command:
-        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }})
-        # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
-        # command: UPDATE PGM START(REFRESH) NAME(*)
-        plex: IMSC
-        route: IMC1
-      register: imsout1
-      ignore_errors: true
-    - name: Resultat de Refresh MPR
-      ansible.builtin.debug:
-        msg:
-          - "Message de sortie": "{{ imsout1.msg }}"
-          - "{{ imsout1.ims_output[0].type_2_response[0] }}"
-
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
-    - name: Copy a local progam file to a data set
+    - name: Copy a local progam file to a PDS member
+      loop:
+        - { membre: 'IVTNIMS', fichier: 'IVTNIMS.cbl' }
+        - { membre: 'IVTNIMSC', fichier: 'IVTNIMSC.cpy' }
       ibm.ibm_zos_core.zos_copy:
-        src: ./programs/{{ pgmtocompile }}.cbl
-        dest: AYMERIC.IMS.SOURCES({{ pgmtocompile }})
+        src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/IMS/programs/{{ item.fichier }}
+        dest: AYMERIC.IMS.SOURCES({{ item.membre }})
+        encoding:
+          from: UTF-8
+          to: IBM-1140
+        force: true
+        remote_src: false
+
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
         src: "./templates/COIMSDB.j2"
@@ -63,3 +56,19 @@
     - name: Output Compil
       ansible.builtin.debug:
         msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+
+    # We ask IMS to free the program
+    - name: We force MPR to free program ({{ pgmtocompile }})
+      ibm.ibm_zos_ims.ims_command:
+        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }})
+        # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
+        # command: UPDATE PGM START(REFRESH) NAME(*)
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+    - name: Resultat de Refresh MPR
+      ansible.builtin.debug:
+        msg:
+          - "Message de sortie": "{{ imsout1.msg }}"
+          - "{{ imsout1.ims_output[0].type_2_response[0] }}"

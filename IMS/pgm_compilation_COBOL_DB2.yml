@@ -15,26 +15,11 @@
       register: temp_file_path
       delegate_to: localhost
 
-    # We ask IMS to free the program
-    - name: We force MPR to free program ({{ pgmtocompile }})
-      ibm.ibm_zos_ims.ims_command:
-        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }}) OPTION(ALLRSP)
-        # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
-        # command: UPDATE PGM START(REFRESH) NAME(*)
-        plex: IMSC
-        route: IMC1
-      register: imsout1
-      ignore_errors: true
-    - name: Resultat de Refresh MPR
-      ansible.builtin.debug:
-        msg:
-          - "Message de sortie": "{{ imsout1.msg }}"
-          - "{{ imsout1.ims_output[0].type_2_response[0] }}"
-
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
     - name: Copy a local progam file to a PDS member
       loop:
         - { membre: 'IVTNDB2', fichier: 'IVTNDB2.cbl' }
+        - { membre: 'IVTNDB2C', fichier: 'IVTNDB2C.cpy' }
       ibm.ibm_zos_core.zos_copy:
         src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/IMS/programs/{{ item.fichier }}
         dest: AYMERIC.IMS.SOURCES({{ item.membre }})
@@ -88,3 +73,19 @@
           - "{{ outputcompil.jobs[0].ddnames[1].content[14] }}"
           - "{{ outputcompil.jobs[0].ddnames[1].content[15] }}"
         # msg: "{{ outputcompil }}"
+
+    # We ask IMS to free the program
+    - name: We force MPR to free program ({{ pgmtocompile }})
+      ibm.ibm_zos_ims.ims_command:
+        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }}) OPTION(ALLRSP)
+        # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
+        # command: UPDATE PGM START(REFRESH) NAME(*)
+        plex: IMSC
+        route: IMC1
+      register: imsout1
+      ignore_errors: true
+    - name: Resultat de Refresh MPR
+      ansible.builtin.debug:
+        msg:
+          - "Message de sortie": "{{ imsout1.msg }}"
+          - "{{ imsout1.ims_output[0].type_2_response[0] }}"
