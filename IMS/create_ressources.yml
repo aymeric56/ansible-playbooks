@@ -1,0 +1,49 @@
+---
+- name: Create IMS ressources
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+  vars:
+    pgm: AKCODB2
+    tran: AKCODB2
+
+  tasks:
+    # - name: Set Facts
+    #   ansible.builtin.set_fact:
+    #     pgm: AKCODB2
+    #     tran: AKCODB2
+
+    - name: Create program {{ pgm }}
+      ibm.ibm_zos_ims.ims_command:
+        batch:
+          - command: CREATE PGM NAME({{ pgm }}) LIKE(RSC(IVTN2))
+            plex: IMSC
+            route: IMC1
+            # register: imsout1
+          - command: UPD PGM NAME({{ pgm }}) SET(GPSB(Y),LANG(COBOL))
+            plex: IMSC
+            route: IMC1
+        #     register: imsout2
+        # register: outpgm
+
+    - name: Create transaction {{ tran }}
+      ibm.ibm_zos_ims.ims_command:
+        batch:
+          - command: CREATE TRAN NAME({{ tran }}) LIKE(RSC(IVTNOM))
+            plex: IMSC
+            route: IMC1
+          - command: UPD TRAN NAME({{ tran }}) SET(PGM({{ pgm }})) SCOPE(ALL)
+            plex: IMSC
+            route: IMC1
+
+    # - name: Resultat de Online Change
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "Message de sortie CREATE PGM 1": "{{ imsout1.msg }}"
+    #       - "{{ imsout1.ims_output[0].type_2_response[0] }}"
+    #       - "Message de sortie CREATE PGM update": "{{ imsout2.msg }}"
+    #       - "{{ imsout2.ims_output[0].type_2_response[0] }}"
+    #       - "Message de sortie CREATE TRAN 1": "{{ imsout3.msg }}"
+    #       - "{{ imsout3.ims_output[0].type_2_response[0] }}"
+    #       - "Message de sortie CREATE TRAN update": "{{ imsout4.msg }}"
+    #       - "{{ imsout4.ims_output[0].type_2_response[0] }}"

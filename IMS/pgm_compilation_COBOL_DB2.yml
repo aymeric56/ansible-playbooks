@@ -21,7 +21,7 @@
         - { membre: 'IVTNDB2', fichier: 'IVTNDB2.cbl' }
         - { membre: 'IVTNDB2C', fichier: 'IVTNDB2C.cpy' }
       ibm.ibm_zos_core.zos_copy:
-        src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/IMS/programs/{{ item.fichier }}
+        src: ./IMS/programs/{{ item.fichier }}
         dest: AYMERIC.IMS.SOURCES({{ item.membre }})
         encoding:
           from: UTF-8

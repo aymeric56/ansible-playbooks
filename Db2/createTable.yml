@@ -1,22 +1,12 @@
 ---
-- name: Grant on Db2 sub system
+- name: Create Table
   hosts: zt01
   gather_facts: false
   environment: "{{ environment_vars }}"
 
 # -------
 # RAPPEL: PLAN -> COLLECTION -> PACKAGE
-# pour autorisation à bind:
-#   GRANT BINDADD TO ENSIS00 WITH GRANT OPTION;
-#   GRANT CREATE IN COLLECTION CLENSISA TO ENSIS00;
 # -------
-
-  vars:
-    # collection: 'CLENSISA'
-    # collection: 'CLTELECO'
-    collection: 'CLAKATHON'
-    sys: 'DBC1'
-    db2prefix: DBC0CFG
 
   tasks:
     - name: Create temporary directory for the compilation JCL
@@ -25,16 +15,17 @@
       register: temp_file_path
       delegate_to: localhost
 
+    # Submit JCL
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
-        src: "./templates/grant.j2"
-        dest: "{{ temp_file_path.path }}/grant.j2"
-        output_encoding: "ASCII"
+        src: "./templates/PhoneBookDDL_Hackathon.jcl"
+        dest: "{{ temp_file_path.path }}/PhoneBookDDL.jcl"
+        output_encoding: ISO8859-1
         mode: '0644'
       delegate_to: localhost
     - name: Submit JCL
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/grant.j2"
+        src: "{{ temp_file_path.path }}/PhoneBookDDL.jcl"
         location: LOCAL
         wait_time_s: 2
         return_output: true
@@ -50,7 +41,7 @@
     - name: Get job output
       ibm.ibm_zos_core.zos_job_output:
         job_id: "{{ responsejcl.jobs[0].job_id }}"
-      register: outputcompil
+      register: outputjob
     - name: Display job log
       ansible.builtin.debug:
-        msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        msg: "{{ outputjob }}"

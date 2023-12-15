@@ -4,7 +4,9 @@
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
-    pgmtocompile: IVTNIMS
+    pgmtocompile: AKCODB2
+    db2: DB2.V12                            # cas mainplex
+    db2prefix: DBC0CFG                      # cas mainplex
 
   tasks:
     - name: Create temporary directory for the compilation JCL
@@ -16,11 +18,11 @@
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
     - name: Copy a local progam file to a PDS member
       loop:
-        - { membre: 'IVTNIMS', fichier: 'IVTNIMS.cbl' }
-        - { membre: 'IVTNIMSC', fichier: 'IVTNIMSC.cpy' }
+        - { membre: 'AKCODB2', fichier: 'AKCODB2_final.cbl' }
+        - { membre: 'AKCODB2C', fichier: 'AKCODB2C_final.cpy' }
       ibm.ibm_zos_core.zos_copy:
         src: ./IMS/programs/{{ item.fichier }}
-        dest: AYMERIC.IMS.SOURCES({{ item.membre }})
+        dest: EDUC.IMS.SOURCES({{ item.membre }})
         encoding:
           from: UTF-8
           to: IBM-1140
@@ -29,16 +31,16 @@
 
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
-        src: "./templates/COIMSDB.j2"
-        dest: "{{ temp_file_path.path }}/COIMSDB.j2"
-        output_encoding: "ASCII"
+        src: "./templates/COIMSDB2_Hackathon_coprocessor.j2"
+        dest: "{{ temp_file_path.path }}/COIMSDB2_Hackathon_coprocessor.j2"
+        output_encoding: ISO8859-1
         mode: '0644'
       delegate_to: localhost
+
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COIMSDB.j2"
+        src: "{{ temp_file_path.path }}/COIMSDB2_Hackathon_coprocessor.j2"
         location: LOCAL
-        wait: true
         wait_time_s: 2
         return_output: true
         encoding:
@@ -55,14 +57,29 @@
       register: outputcompil
     - name: Output Compil
       ansible.builtin.debug:
-        msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        # msg: "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+        msg:
+          - "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[2] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[3] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[4] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[5] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[6] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[7] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[8] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[9] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[10] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[11] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[12] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[13] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[14] }}"
+          - "{{ outputcompil.jobs[0].ddnames[1].content[15] }}"
+        # msg: "{{ outputcompil }}"
 
     # We ask IMS to free the program
     - name: We force MPR to free program ({{ pgmtocompile }})
       ibm.ibm_zos_ims.ims_command:
-        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }})
-        # command: UPDATE PGM START(REFRESH) NAME(*) OPTION(ALLRSP)
-        # command: UPDATE PGM START(REFRESH) NAME(*)
+        command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }}) OPTION(ALLRSP)
         plex: IMSC
         route: IMC1
       register: imsout1
