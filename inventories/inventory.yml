@@ -11,6 +11,9 @@ source_system:
     zac:
       ansible_host: 10.3.20.153
       ansible_user: aymeric
+    zhackathon:
+      ansible_host: 10.7.1.204
+      ansible_user: aymeric
     zt01:
       ansible_host: 10.3.20.1
       ansible_user: aymeric

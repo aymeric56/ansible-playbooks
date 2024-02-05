@@ -1,0 +1,133 @@
+---
+- name: Compilation d'un programme CICS COBOL
+  hosts: zt01
+  # collections:
+  #   - ibm.ibm_zos_core
+  #   - ibm.ibm_zos_cics
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars:
+    pgmtocompile: 'WHSPEAPI'
+    csdgroup: 'AYMERIC'
+    cmci_host: '10.3.20.1'
+    cmci_port: '3050'
+    cmci_user: 'AYMERIC'
+    context: 'MOBPLEX'
+    scope: 'CICSMOBP'
+    scheme: 'http'
+
+  # vars_prompt:
+  #  - name: cmci_user
+  #    prompt: CMCI user name (leave blank for unauthenticated)
+  #  - name: cmci_password
+  #    prompt: CMCI password (leave blank for unauthenticated)
+
+  tasks:
+    - name: Create temporary directory for the compilation JCL
+      ansible.builtin.tempfile:
+        state: directory
+      register: temp_file_path
+      delegate_to: localhost
+
+    - name: Copy local progam files to a PDS member
+      loop:
+        - { membre: 'WHSPEAPI', fichier: 'whspeapi.cbl' }
+      ibm.ibm_zos_core.zos_copy:
+        src: /Users/Aymeric/Documents/Softwares/ansible/git-ansible-playbooks/CICS/programs/Tests/{{ item.fichier }}
+        dest: AYMERIC.CICS.SOURCES({{ item.membre }})
+        encoding:
+          from: UTF-8
+          to: IBM-1140
+        remote_src: false
+
+    # COBOL compilation: compilation & linkedit
+    - name: Compile templates and put results in temporary directory
+      ansible.builtin.template:
+        src: "./templates/COMPCCOB.j2"
+        dest: "{{ temp_file_path.path }}/COMPCCOB.j2"
+        output_encoding: "ASCII"
+        mode: '0644'
+      delegate_to: localhost
+    - name: Submit compil job
+      ibm.ibm_zos_core.zos_job_submit:
+        src: "{{ temp_file_path.path }}/COMPCCOB.j2"
+        location: LOCAL
+        wait: true
+        wait_time_s: 2
+        return_output: true
+        encoding:
+          from: ISO8859-1
+          to: IBM-037
+      register: respcompil
+    - name: Output Soumission Compil
+      ansible.builtin.debug:
+        msg: "{{ respcompil.jobs[0].job_id }}"
+
+    - name: Job output
+      ibm.ibm_zos_core.zos_job_output:
+        job_id: "{{ respcompil.jobs[0].job_id }}"
+      register: outputcompil
+    - name: Output Compil
+      ansible.builtin.debug:
+        # msg: "{{ outputcompil.jobs[0].ddnames[0].content }}"
+        msg:
+          - "{{ outputcompil.jobs[0].ddnames[0].content[1] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[2] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[3] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[4] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[5] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[6] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[7] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[8] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[9] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[10] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[11] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[12] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[13] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[14] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[15] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[16] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[17] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[18] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[19] }}"
+          - "{{ outputcompil.jobs[0].ddnames[0].content[20] }}"
+      ignore_errors: true
+      register: ignore_errors_register
+
+    ############################################################################
+    # Install module dependencies
+    ############################################################################
+    - name: Make sure CMCI module dependencies are installed
+      ansible.builtin.pip:
+        name:
+          - requests
+          - xmltodict
+          - typing;python_version<"3.5"
+
+    ############################################################################
+    # NEWCOPY
+    ############################################################################
+    - name: NEWCOPY PROGRAM in CICS
+      delegate_to: localhost
+      ibm.ibm_zos_cics.cmci_action:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        action_name: NEWCOPY
+        type: CICSProgram
+        resources:
+          filter:
+            program: '{{ pgmtocompile }}'
+      register: outnewcopy
+
+    - name: Outnewcopy CICS
+      ansible.builtin.debug:
+        msg:
+          - { "CMCI failed": "{{ outnewcopy.failed }}",
+              "program": "{{ outnewcopy.records[0].program }}",
+              "status": "{{ outnewcopy.records[0].status }}" }

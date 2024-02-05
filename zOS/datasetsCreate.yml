@@ -1,0 +1,67 @@
+---
+- name: Playbook de tâches diverses
+  hosts: zac
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    - name: Create a PDS data set and replace if it exists
+      loop:
+        - ENSIS00
+        - ENSIS01
+        - ENSIS02
+        - ENSIS03
+        - ENSIS04
+        - ENSIS05
+        - ENSIS06
+        - ENSIS07
+        - ENSIS08
+        - ENSIS09
+        - ENSIS10
+        - ENSIS11
+        - ENSIS12
+        - ENSIS13
+        - ENSIS14
+        - ENSIS15
+        - ENSIS16
+        - ENSIS17
+        - ENSIS18
+        - ENSIS19
+        - ENSIS20
+        - ENSIS21
+        - ENSIS22
+        - ENSIS23
+        - ENSIS24
+        - ENSIS25
+        - ENSIS26
+        - ENSIS27
+        - ENSIS28
+        - ENSIS29
+        - ENSIS30
+        - ENSIS31
+        - ENSIS32
+        - ENSIS33
+        - ENSIS34
+        - ENSIS35
+        - ENSIS36
+        - ENSIS37
+        - ENSIS38
+        - ENSIS39
+      ibm.ibm_zos_core.zos_data_set:
+        batch:
+          - name: ENSISA.EXAM.{{ item }}.SOURCES
+            type: pds
+            space_primary: 1
+            space_secondary: 1
+            space_type: M
+            record_format: fb
+            record_length: 80
+            replace: true
+          - name: ENSISA.EXAM.{{ item }}.JCL
+            type: pds
+            space_primary: 1
+            space_secondary: 1
+            space_type: M
+            record_format: fb
+            record_length: 80
+            replace: true

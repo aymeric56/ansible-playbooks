@@ -36,3 +36,8 @@ INSERT INTO HACKATHON.CONTACTS  (
                 '0605040302',
                 '34000',
                 'aymeric@gmail.com');
+
+
+
+SELECT * FROM TELECOMN.TYPEEVT;
+SELECT * FROM TELECOMN.LIEU;

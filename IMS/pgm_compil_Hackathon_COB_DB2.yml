@@ -1,12 +1,14 @@
 ---
 - name: Playbook de compilation IMS
-  hosts: zt01
+  hosts: zhackathon
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
     pgmtocompile: AKCODB2
     db2: DB2.V12                            # cas mainplex
     db2prefix: DBC0CFG                      # cas mainplex
+    # db2sys: DBC0                            # cas mainplex
+    db2sys: DBC1                            # cas zAc ou zHackathon
 
   tasks:
     - name: Create temporary directory for the compilation JCL
@@ -18,11 +20,11 @@
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
     - name: Copy a local progam file to a PDS member
       loop:
-        - { membre: 'AKCODB2', fichier: 'AKCODB2_final.cbl' }
-        - { membre: 'AKCODB2C', fichier: 'AKCODB2C_final.cpy' }
+        - { membre: 'AKCODB2', fichier: 'AKCODB2_start.cbl' }
+        - { membre: 'AKCODB2C', fichier: 'AKCODB2C_start.cpy' }
       ibm.ibm_zos_core.zos_copy:
         src: ./IMS/programs/{{ item.fichier }}
-        dest: EDUC.IMS.SOURCES({{ item.membre }})
+        dest: AYMERIC.IMS.SOURCES({{ item.membre }})
         encoding:
           from: UTF-8
           to: IBM-1140
@@ -47,14 +49,20 @@
           from: ISO8859-1
           to: IBM-037
       register: respcompil
-    - name: Output Soumission Compil
-      ansible.builtin.debug:
-        msg: "{{ respcompil.jobs[0].job_id }}"
+      # ignore_errors: true
+      # En attente de la zos_core v1.10, il faut récupérer le job ID à la main
+    # - name: Output Soumission Compil
+    #   ansible.builtin.debug:
+    #     msg: "{{ respcompil.msg | split('but there was an error') | first | split | last }}"
 
     - name: Job output
       ibm.ibm_zos_core.zos_job_output:
         job_id: "{{ respcompil.jobs[0].job_id }}"
       register: outputcompil
+    # - name: Job output
+    #   ibm.ibm_zos_core.zos_job_output:
+    #     job_id: "{{ respcompil.msg | split('but there was an error') | first | split | last }}"
+    #   register: outputcompil
     - name: Output Compil
       ansible.builtin.debug:
         # msg: "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"

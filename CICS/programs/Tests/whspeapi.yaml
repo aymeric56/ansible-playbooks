@@ -1,0 +1,59 @@
+openapi: 3.0.1
+info:
+  title: tests
+  description: whspeapi exposed as an API
+  version: 1.0.0
+paths:
+  /pays:
+    post:
+      tags:
+      - whspeapi.0
+      operationId: postwhspeapi_v1.0
+      requestBody:
+        description: request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postPlaceOrder_v1.0_request'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postPlaceOrder_v1.0_request'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postPlaceOrder_v1.0_request'
+components:
+  schemas:
+    postPlaceOrder_v1.0_request:
+      type: object
+      properties:
+        placeOrder:
+          type: object
+          properties:
+            pays:
+              maxLength: 2
+              type: string
+            trans:
+              maxLength: 4
+              type: string
+            codope:
+              maxLength: 2
+              type: string
+            contract:
+              maximum: 999
+              minimum: 0
+              type: integer
+            rest:
+              maximum: 999
+              minimum: 0
+              type: integer
+            ErrorCode:
+              maxLength: 2
+              type: string

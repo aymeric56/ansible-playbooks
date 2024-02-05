@@ -1,6 +1,7 @@
 ---
 - name: Create IMS ressources
-  hosts: zt01
+  hosts: zhackathon
+  # hosts: zt01
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
@@ -47,3 +48,9 @@
     #       - "{{ imsout3.ims_output[0].type_2_response[0] }}"
     #       - "Message de sortie CREATE TRAN update": "{{ imsout4.msg }}"
     #       - "{{ imsout4.ims_output[0].type_2_response[0] }}"
+
+# ICH408I USER(AYMERIC ) GROUP(SYSPROG ) NAME(AYMERIC AFFOUARD FR ) 475
+#   IMS.CSLIMSC.CRE.PGM CL(OPERCMDS)                                   
+#   INSUFFICIENT ACCESS AUTHORITY                                      
+#   FROM IMS.*.CRE.** (G)                                              
+#   ACCESS INTENT(UPDATE )  ACCESS ALLOWED(NONE   )                                     

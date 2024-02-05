@@ -1,0 +1,21 @@
+//RACFCMD  JOB 0,'Aymeric',NOTIFY=&SYSUID.,CLASS=W,MSGCLASS=H
+//*
+//RACFSTEP   EXEC PGM=IKJEFT01
+//SYSTSPRT  DD SYSOUT=*
+//SYSPRINT  DD SYSOUT=*
+//SYSTSIN   DD   *
+ADDSD  'ENSISA.EXAM.{{ usertso }}.**' UACC(NONE)
+PERMIT 'ENSISA.EXAM.{{ usertso }}.**' ID({{ usertso }}) ACCESS(ALTER) - 
+    CLASS(DATASET) GEN
+PERMIT 'ENSISA.EXAM.{{ usertso }}.**' ID(PROFS) ACCESS(ALTER) -
+    CLASS(DATASET) GEN
+SETROPTS GENERIC(DATASET) REFRESH
+/*
+//
+//* ---------------------------------------------
+//* everything else is comment
+//* ---------------------------------------------
+    	PERMIT 'ENSISA.**' ID(ECENSISA) ACCESS(READ) CLASS(DATASET) GEN
+        SETROPTS GENERIC(DATASET) REFRESH
+//*
+//

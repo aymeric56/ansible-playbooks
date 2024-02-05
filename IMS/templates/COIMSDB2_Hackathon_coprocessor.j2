@@ -35,12 +35,13 @@
 //   SET MEM={{ pgmtocompile }}               PROGRAM NAME
 //   SET COBOLLIB='COBOL.V6R3.SIGYCOMP'       COBOL COMPILER LOADLIB
 //   SET LELIB='CEE.SCEELKED'                 LE LINKEDIT LIBRARY
-//   SET DSPREFIX='EDUC.IMS'                  DATASETs PREFIX
+//   SET DSPREFIX='AYMERIC.IMS'               DATASETs PREFIX
 //   SET DB2={{ db2 }}                        DB2 LEVEL
 //*   SET DB2='DB2.V12'                       pour mainplex
 //   SET DB2PREF={{ db2prefix }}              PREFIX DB2
 //*   SET DB2PREF='DBC0CFG'                   pour mainplex
-//   SET SYS=DBC0
+//   SET SYS={{ db2sys }}                     
+//*   SET SYS=DBC0                            pour mainplex
 //*
 //*  ***************************************************
 //*        COMPILE & DBRM STEP via le coprocesseur

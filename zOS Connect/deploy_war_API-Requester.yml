@@ -76,4 +76,3 @@
     # - name: Show fetchOutput
     #   debug:
     #     msg: "{{ fetchOutput }}"
-    

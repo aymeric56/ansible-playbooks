@@ -1,6 +1,6 @@
 ---
 - name: Create Table
-  hosts: zt01
+  hosts: zhackathon
   gather_facts: false
   environment: "{{ environment_vars }}"
 

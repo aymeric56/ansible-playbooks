@@ -1,0 +1,29 @@
+---
+- name: Playbook de unarchive
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+  # Simple extract
+    - name: Copy local tar file and unpack it on the managed z/OS node
+      ibm.ibm_zos_core.zos_unarchive:
+        src: "./IMS/programs/Archive.zip"
+        remote_src: false
+        format:
+          name: zip
+        dest: "EDUC.IMS.SOURCES"
+        dest_data_set:
+          name: "EDUC.IMS.SOURCES"
+          type: "PDS"
+      register: output_archive
+
+    - name: Debug
+      ansible.builtin.debug:
+        msg: "{{ output_archive }}"
+
+    - name: Resultat de Refresh MPR
+      ansible.builtin.debug:
+        msg:
+          - "Variable d'Environments": "{{ environment_vars }}"
+          - "Output Archive": "{{ output_archive }}"

@@ -49,3 +49,8 @@
 - operator command
 
 `ansible-playbook -i inventories zOS/opercmd.yml`
+
+- datasets
+`ansible-playbook -i inventories zOS/datasetsCopie.yml`
+
+`ansible-playbook -i inventories zOS/datasetsCreate.yml`

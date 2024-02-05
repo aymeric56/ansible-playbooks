@@ -1,0 +1,56 @@
+---
+- name: List User
+  hosts: zac
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  tasks:
+    - name: Set Facts
+      ansible.builtin.set_fact:
+        users:
+          - ENSIS00
+          - ENSIS01
+          - ENSIS02
+          - ENSIS03
+          - ENSIS04
+          - ENSIS05
+          - ENSIS06
+          - ENSIS07
+          - ENSIS08
+          - ENSIS09
+          - ENSIS10
+          - ENSIS11
+          - ENSIS12
+          - ENSIS13
+          - ENSIS14
+          - ENSIS15
+          - ENSIS16
+          - ENSIS17
+          - ENSIS18
+          - ENSIS19
+          - ENSIS20
+          - ENSIS21
+          - ENSIS22
+          - ENSIS23
+          - ENSIS24
+          - ENSIS25
+          - ENSIS26
+          - ENSIS27
+          - ENSIS28
+          - ENSIS29
+          - ENSIS30
+          - ENSIS31
+          - ENSIS32
+          - ENSIS33
+          - ENSIS34
+          - ENSIS35
+          - ENSIS36
+          - ENSIS37
+          - ENSIS38
+          - ENSIS39
+
+    - name: Submit RACF Job
+      ansible.builtin.include_tasks: submitRACFcmdzAc.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: usertso
