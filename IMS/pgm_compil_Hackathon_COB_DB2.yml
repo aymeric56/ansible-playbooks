@@ -20,8 +20,8 @@
     # COBOL compilation: pre-compile & | compilation & linkedit & bind
     - name: Copy a local progam file to a PDS member
       loop:
-        - { membre: 'AKCODB2', fichier: 'AKCODB2_start.cbl' }
-        - { membre: 'AKCODB2C', fichier: 'AKCODB2C_start.cpy' }
+        - { membre: 'AKCODB2', fichier: 'AKCODB2_final.cbl' }
+        - { membre: 'AKCODB2C', fichier: 'AKCODB2C_final.cpy' }
       ibm.ibm_zos_core.zos_copy:
         src: ./IMS/programs/{{ item.fichier }}
         dest: AYMERIC.IMS.SOURCES({{ item.membre }})

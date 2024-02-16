@@ -1,6 +1,8 @@
 ---
 - name: Grant on Db2 sub system
-  hosts: zt01
+  # hosts: zt01
+  hosts: zac
+  # hosts: zhackathon
   gather_facts: false
   environment: "{{ environment_vars }}"
 
@@ -12,9 +14,9 @@
 # -------
 
   vars:
-    # collection: 'CLENSISA'
+    collection: 'CLENSISA'
     # collection: 'CLTELECO'
-    collection: 'CLAKATHON'
+    # collection: 'CLAKATHON'
     sys: 'DBC1'
     db2prefix: DBC0CFG
 
@@ -29,7 +31,7 @@
       ansible.builtin.template:
         src: "./templates/grant.j2"
         dest: "{{ temp_file_path.path }}/grant.j2"
-        output_encoding: "ASCII"
+        output_encoding: ISO8859-1
         mode: '0644'
       delegate_to: localhost
     - name: Submit JCL

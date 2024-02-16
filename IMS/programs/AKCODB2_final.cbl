@@ -179,7 +179,7 @@
                EVALUATE TRUE
                WHEN TPSTAT-OK
                WHEN TPSTAT-EXIST
-                    DISPLAY 'Avant Validate LN : ' IN-LAST-NAME
+                    DISPLAY 'Avant Validate LN a : ' IN-LAST-NAME
                     PERFORM VALIDATE-INPUT
       * INPUT WASVALID, CONTINUE
                     IF VALID-INPUT = 0
@@ -347,6 +347,7 @@
            MOVE IN-COMMAND TO OUT-COMMAND-50
 
            SET OUT-REC-IDX TO 1
+           DISPLAY 'SHOW50-CURS'
            EXEC SQL DECLARE SHOW50-CURS CURSOR FOR
                 SELECT LASTNAME,
                 FIRSTNAME,

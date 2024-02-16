@@ -5,8 +5,10 @@
   gather_facts: false
   environment: "{{ environment_vars }}"
   vars:
-    pgm: AKCODB2
-    tran: AKCODB2
+    pgm: IVTNDB2
+    tran: IVTNDB2
+    # pgm: AKCODB2
+    # tran: AKCODB2
 
   tasks:
     # - name: Set Facts
@@ -30,7 +32,7 @@
     - name: Create transaction {{ tran }}
       ibm.ibm_zos_ims.ims_command:
         batch:
-          - command: CREATE TRAN NAME({{ tran }}) LIKE(RSC(IVTNOM))
+          - command: CREATE TRAN NAME({{ tran }}) LIKE(RSC(IVTN2))
             plex: IMSC
             route: IMC1
           - command: UPD TRAN NAME({{ tran }}) SET(PGM({{ pgm }})) SCOPE(ALL)

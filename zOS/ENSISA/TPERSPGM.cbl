@@ -94,7 +94,7 @@
            SET PAS-ANOMALIE TO TRUE
            MOVE 0 TO INDICE-TABLEAU
                      NB-POSTE-LISTE
-       .
+           .
       *
        TRAITEMENT.
            EVALUATE TRUE
@@ -137,7 +137,7 @@
               PERFORM FORMATAGE-ERREUR-DB2
               PERFORM TRT-ANOMALIE
            END-IF
-       .
+           .
       *
        INSERT-TPERS.
       *    RECHERCHE DE LA DERNIERE CLE PRESENTE EN TABLE
@@ -157,7 +157,7 @@
               PERFORM FORMATAGE-ERREUR-DB2
               PERFORM TRT-ANOMALIE
            END-IF
-       .
+           .
       *
        SELECT-DB2.
            EXEC SQL
@@ -176,7 +176,7 @@
                WHERE
                  ID_PERS = :H-CLE-ID-PERS
            END-EXEC
-       .
+           .
       * 
        L01-PREMIERE-LECTURE.
       *    DISPLAY 'ENTREE DANS LECTURE LISTE'
@@ -193,7 +193,7 @@
               PERFORM FORMATAGE-ERREUR-DB2
               PERFORM TRT-ANOMALIE
            END-IF
-       .
+           .
       *
        L01-LECTURE-SUIVANTE.
       *    DISPLAY 'LECTURE SUIVANTE'
@@ -217,7 +217,7 @@
               PERFORM FORMATAGE-ERREUR-DB2
               PERFORM TRT-ANOMALIE
            END-EVALUATE
-       .
+           .
       * 
        L01-FIN-LECTURE.
            EXEC SQL
@@ -227,7 +227,7 @@
                PERFORM FORMATAGE-ERREUR-DB2
                PERFORM TRT-ANOMALIE
            END-IF
-       .
+           .
       * 
        FORMATAGE-ERREUR-DB2.
            MOVE SQLCODE TO W-SQLCODE
@@ -237,13 +237,13 @@
            DISPLAY SQLCODE-POUR-DISPLAY
               ' ' SQLERRM ' '
            DISPLAY SQLERRD(2)
-       .
+           .
       *
        TRT-ANOMALIE.
       *     DISPLAY 'ANOMALIE DETECTEE'
       *
            SET ANOMALIE TO TRUE
-       .
+           .
       *
        INSERTION-DB2.
            MOVE  I-NOM           TO H-NOM
@@ -279,7 +279,7 @@
                PERFORM FORMATAGE-ERREUR-DB2
                PERFORM TRT-ANOMALIE
            END-IF
-       .
+           .
       *
        RESTITUTION-LECTURE-SIMPLE.
            MOVE H-NOM          TO S-NOM
@@ -288,7 +288,7 @@
            MOVE H-ADRESSE      TO S-ADRESSE
            MOVE H-COD-POS-NAISS      TO S-COD-POS-NAISS
       *    DISPLAY 'DONNEES H DE SORTIE : ' HOST-VARIABLES
-       .
+           .
       *
        RESTITUTION-LECTURE-LISTE.
       *    INCREMENTATION DE L'OCCURS DE TABLEAU POUR STOCKER
@@ -303,4 +303,4 @@
            MOVE H-COD-POS-NAISS  TO T-COD-POS-NAISS (INDICE-TABLEAU)
       *
            MOVE INDICE-TABLEAU   TO NB-POSTE-LISTE
-       .
+           .

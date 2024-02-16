@@ -1,6 +1,7 @@
 ---
 - name: Playbook d'administration IMS
-  hosts: zt01
+  # hosts: zt01
+  hosts: zhackathon
   gather_facts: false
   environment: "{{ environment_vars }}"
 

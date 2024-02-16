@@ -18,6 +18,7 @@
     # Submit JCL
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
+        # src: "./templates/PhoneBookDDL.jcl"
         src: "./templates/PhoneBookDDL_Hackathon.jcl"
         dest: "{{ temp_file_path.path }}/PhoneBookDDL.jcl"
         output_encoding: ISO8859-1
