@@ -43,45 +43,47 @@
       ibm.ibm_zos_core.zos_job_submit:
         src: "{{ temp_file_path.path }}/COIMSDB2_Hackathon_coprocessor.j2"
         location: LOCAL
-        wait_time_s: 2
-        return_output: true
+        wait_time_s: 20
+        max_rc: 4
         encoding:
           from: ISO8859-1
           to: IBM-037
       register: respcompil
-      # ignore_errors: true
+      ignore_errors: true
       # En attente de la zos_core v1.10, il faut récupérer le job ID à la main
-    # - name: Output Soumission Compil
-    #   ansible.builtin.debug:
-    #     msg: "{{ respcompil.msg | split('but there was an error') | first | split | last }}"
+    - name: Output Soumission Compil
+      ansible.builtin.debug:
+        msg: "{{ respcompil.jobs[0].ddnames[0].content }}"
+        # msg: "{{ respcompil.msg | split('but there was an error') | first | split | last }}"
 
-    - name: Job output
-      ibm.ibm_zos_core.zos_job_output:
-        job_id: "{{ respcompil.jobs[0].job_id }}"
-      register: outputcompil
+    # - name: Job output
+    #   ibm.ibm_zos_core.zos_job_output:
+    #     job_id: "{{ respcompil.jobs[0].job_id }}"
+    #   register: outputcompil
     # - name: Job output
     #   ibm.ibm_zos_core.zos_job_output:
     #     job_id: "{{ respcompil.msg | split('but there was an error') | first | split | last }}"
     #   register: outputcompil
-    - name: Output Compil
-      ansible.builtin.debug:
-        # msg: "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
-        msg:
-          - "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[2] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[3] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[4] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[5] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[6] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[7] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[8] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[9] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[10] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[11] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[12] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[13] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[14] }}"
-          - "{{ outputcompil.jobs[0].ddnames[1].content[15] }}"
+    # - name: Output Compil
+    #   ansible.builtin.debug:
+    #     # msg: "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+    #     msg:
+    #       - "{{ outputcompil }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[1] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[2] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[3] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[4] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[5] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[6] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[7] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[8] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[9] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[10] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[11] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[12] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[13] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[14] }}"
+    #       - "{{ outputcompil.jobs[0].ddnames[1].content[15] }}"
         # msg: "{{ outputcompil }}"
 
     # We ask IMS to free the program
