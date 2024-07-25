@@ -42,6 +42,7 @@
            03 WS-RETURN-CODE           PIC S9(8) COMP.
            03 DISP-SQLCODE             PIC +ZZZZZZZZ9.
            03 KeyLastname              PIC X(10).
+           03 UserID                   PIC X(8).
 
       * Variables used with Db2 for table contacts
        01  CONTACT-DETAILS.
@@ -643,7 +644,14 @@
               CLOSE SHOW50-CURS
            END-EXEC
 
-           MOVE command of messageInput TO command of messageOutput2
+      *     MOVE command of messageInput TO command of messageOutput2
+
+           EXEC CICS ASSIGN
+               USERID(UserID)
+           END-EXEC 
+           DISPLAY "UserID : " UserID 
+           MOVE UserID TO command of messageOutput2
+
            EXEC CICS PUT CONTAINER('PBOOK-OUTPUT2')
                      FROM(messageOutput2)
            END-EXEC

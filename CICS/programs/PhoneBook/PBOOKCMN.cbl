@@ -41,7 +41,6 @@
            03 WS-RESP                  PIC S9(8) COMP.
            03 WS-RETURN-CODE           PIC S9(8) COMP.
 
-
       * Program Names to LINK to
        01 WS-PROGRAM-NAMES.
            03  FILLER                      PIC X(8)  VALUE 'HHHHHHHH'.
@@ -130,7 +129,7 @@
       *     EXEC CICS PUT CONTAINER('PBOOK-OUTPUT1')
       *              FROM(messageOutput1)
       *     END-EXEC
-           EXEC CICS LINK   PROGRAM('PBOOKDBN')
+           EXEC CICS LINK   PROGRAM('PBOOKDB2')
                             CHANNEL('JSONCHANNEL')
            END-EXEC
            EXIT.

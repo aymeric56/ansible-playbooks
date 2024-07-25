@@ -43,6 +43,7 @@
           from: UTF-8
           to: IBM-1140
         remote_src: false
+        force: true
 
     # COBOL compilation: compilation & linkedit
     - name: Compile templates and put results in temporary directory
@@ -55,10 +56,9 @@
     - name: Submit compil job
       ibm.ibm_zos_core.zos_job_submit:
         src: "{{ temp_file_path.path }}/COMPCCOB.j2"
-        location: LOCAL
-        wait: true
-        wait_time_s: 2
+        location: local
         return_output: true
+        max_rc: 4
         encoding:
           from: ISO8859-1
           to: IBM-037
