@@ -1,6 +1,6 @@
 ---
 - name: Dislay processes
-  hosts: zac
+  hosts: zt01
   gather_facts: false
   environment: "{{ environment_vars }}"
 
