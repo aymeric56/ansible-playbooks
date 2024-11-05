@@ -11,7 +11,7 @@
 ################################################################################
 
 PYZ: "/usr/lpp/cyp/v3r11/pyz"
-ZOAU: "/usr/lpp/zoautil/v1r2"
+ZOAU: "/usr/lpp/zoautil/v1r3"
 
 ################################################################################
 # Do not configure, variable substituion will correctly set the

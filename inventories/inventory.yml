@@ -8,7 +8,7 @@
 
 source_system:
   hosts:
-    zac:
+    zAc:
       ansible_host: 10.3.20.153
       ansible_user: aymeric
     zhackathon:

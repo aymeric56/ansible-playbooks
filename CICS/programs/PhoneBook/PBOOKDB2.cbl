@@ -322,7 +322,7 @@
                MOVE command of messageInput TO command of messageOutput1
                PERFORM DISPLAY-SQL-CODE
              When Other
-               MOVE 'Snif: problÛme !' TO responseMessage
+               MOVE 'Snif: problème !' TO responseMessage
                  OF messageOutput1
                PERFORM DISPLAY-SQL-CODE
            END-Evaluate.
@@ -536,7 +536,7 @@
       *----------------------------------------------------------------*
 
       *----------------------------------------------------------------*
-      * On cr©e 1 contact                                              *
+      * On crée 1 contact                                              *
       *----------------------------------------------------------------*
        CREATE-CONTACT SECTION.
            MOVE lastName OF messageInput TO C-Lastname
