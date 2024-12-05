@@ -26,23 +26,29 @@
           - "Message de sortie": "{{ imsout1.msg }}"
           - "{{ imsout1.ims_output[0].type_2_response[0] }}"
 
-    # COBOL compilation: pre-compile & | compilation & linkedit & bind
-    - name: Copy a local progam file to a PDS member
-      loop:
-        - { membre: 'API00I01', fichier: 'API00I01.cpy' }
-        - { membre: 'API00P01', fichier: 'API00P01.cpy' }
-        - { membre: 'API00Q01', fichier: 'API00Q01.cpy' }
-        - { membre: 'BAQHAREC', fichier: 'BAQHAREC.cpy' }
-        - { membre: 'BAQHCONC', fichier: 'BAQHCONC.cpy' }
-        - { membre: 'IVTNDB2',  fichier: 'IVTNDB2.cbl'  }
-        - { membre: 'IVTNDB2C', fichier: 'IVTNDB2C.cpy' }
-      ibm.ibm_zos_core.zos_copy:
-        src: ./IMS/programs/PhoneBook_Db2/{{ item.fichier }}
-        dest: AYMERIC.IMS.SOURCES({{ item.membre }})
-        encoding:
-          from: UTF-8
-          to: IBM-1140
+    - name: Compress Directory contents
+      ansible.builtin.archive:
+        path: 
+        - /Users/Aymeric/Documents/Git/ansible-playbooks/IMS/programs/PhoneBook_Db2/*
+        dest: /Users/Aymeric/Documents/Git/ansible-playbooks/IMS/programs/PhoneBook.zip  
+        format: zip
+      delegate_to: 127.0.0.1
+
+    - name: Copy an extract the zip file to z/OS
+      ibm.ibm_zos_core.zos_unarchive:
+        src: ./IMS/programs/PhoneBook.zip
+        dest: "/u/aymeric/SRC_IMS"
+        format: 
+          name: zip
         force: true
+
+    - name: Change for execution to 80col trailing for files
+      ansible.builtin.file:
+        path: /u/aymeric/SRC_IMS/iconv_80col.sh
+        mode: '0744'
+
+    - name: Execute the command in remote shell
+      ansible.builtin.shell: /u/aymeric/SRC_IMS/iconv_80col.sh
 
     - name: Create temporary directory for the compilation JCL
       ansible.builtin.tempfile:
@@ -52,15 +58,15 @@
 
     - name: Compile templates and put results in temporary directory
       ansible.builtin.template:
-        src: "./templates/COIMSDB2_coprocessor.j2"
-        dest: "{{ temp_file_path.path }}/COIMSDB2_coprocessor.j2"
+        src: "./templates/COIMSDB2_coprocessor_USS.j2"
+        dest: "{{ temp_file_path.path }}/COIMSDB2.j2"
         output_encoding: ISO8859-1
         mode: '0644'
       delegate_to: localhost
 
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COIMSDB2_coprocessor.j2"
+        src: "{{ temp_file_path.path }}/COIMSDB2.j2"
         location: local
         wait_time_s: 20
         max_rc: 4

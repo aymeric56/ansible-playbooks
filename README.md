@@ -3,6 +3,8 @@
 ## IMS
 - compilation of a COBOL program & free region
 
+`ansible-playbook -i inventories IMS/compilation_USS_COBOL_DB2.yml`
+
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_DB2.yml`
 
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_IMS_DB.yml`

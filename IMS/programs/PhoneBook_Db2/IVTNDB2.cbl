@@ -670,7 +670,7 @@
                 END-IF
       *           STRING OUT-NUM-RECORDS-X DELIMITED BY SPACE
                 STRING NUMTOSTRINGX DELIMITED BY SPACE
-                       ' contacts trouvé(s)' DELIMITED BY SIZE
+                       ' contacts trouvée(s)' DELIMITED BY SIZE
                    INTO OUT-MESSAGE-50
 
            WHEN OTHER
