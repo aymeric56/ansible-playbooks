@@ -1,0 +1,101 @@
+//COMPCDB2  JOB MSGLEVEL=1,REGION=0M,NOTIFY=&SYSUID,CLASS=A,MSGCLASS=H
+//*
+//*********************************************************************
+//*
+//*   This procedure uses the Enterprise COBOL compiler and its
+//*        integrated CICS translater to generate a COBOL module
+//*        into a PDSE.
+//*
+//*********************************************************************
+//*
+//*  SET PARMS FOR THIS COMPILE:
+//*  ---------------------------
+//   EXPORT SYMLIST=(MEM,DB2)
+//   SET MEM={{ pgmtocompile }}                 PROGRAM NAME
+//   SET DSPREFIX='AYMERIC.CICS.SOURCES'      Sources pour les copybooks
+//   SET LNGPRFX='COBOL.V6R4'                 COBOL COMPILER LOADLIB
+//   SET DB2PREF='DB2.V12'                    Db2 Lib prefix
+//* attention sur zt01 et les guest, pas pareil: DBC0CFG.DB2.V12
+//   SET DB2=DBC1                             Db2 Subsystem Target
+//*   SET COBOLLIB='COBOL.V4R2.SIGYCOMP'       COBOL COMPILER LOADLIB
+//*   SET DTLIB='EQAW.SEQAMOD'                 DEBUG TOOL LOADLIB
+//*   SET LELIB='CEE.SCEELKED'                 LE LINKEDIT LIBRARY
+//*
+//*  ***************************************************
+//*        COMPILE & DBRM STEP via le coprocesseur
+//*  ***************************************************
+//COMPILE EXEC PGM=IGYCRCTL,
+//             PARM=(OPTFILE)
+//STEPLIB DD DISP=SHR,DSN=COBOL.V6R4.SIGYCOMP
+//        DD DISP=SHR,DSN=&DB2PREF..SDSNEXIT
+//        DD DISP=SHR,DSN=&DB2PREF..SDSNLOAD
+//        DD DISP=SHR,DSN=CICSTS.V5R5.CICS.SDFHLOAD
+//SYSLIB  DD PATH='/u/aymeric/SRC_CICS'     
+//SYSOPTF DD *
+    NODYNAM,SOURCE,NOXREF,CICS('SP')
+    SQL('HOST(COB2) QUOTE APOSTSQL SOURCE XREF')
+/*
+//DBRMLIB  DD DISP=SHR,DSN=CICSCFG.GENAPP.CICSMOBP.DBRMLIB(&MEM)
+//SYSIN    DD PATH='/u/aymeric/SRC_CICS/&MEM.'
+//SYSLIN   DD DSN=&&LOADSET,DISP=(MOD,PASS),UNIT=SYSDA, 
+//            SPACE=(800,(500,500))
+//SYSPRINT DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSUT1   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT2   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT3   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT4   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT5   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT6   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT7   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT8   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT9   DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT10  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT11  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT12  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT13  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT14  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT15  DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSMDECK DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//*
+//*  *********************************
+//*        LINK-EDIT STEP
+//*  *********************************
+//         IF RC <= 4 THEN
+//LKED   EXEC PGM=IEWL,
+//            PARM='LIST,XREF,RENT,MAP',COND=(7,LT,COMPILE)
+//SYSLIB   DD DISP=SHR,DSN=CICSTS.V5R5.CICS.SDFHLOAD
+//         DD DISP=SHR,DSN=CEE.SCEELKED
+//SYSLMOD  DD DISP=SHR,DSN=CICSUSR.POTCICS.CICSMOBP.LOADLIB
+//SYSUT1   DD UNIT=SYSDA,DCB=BLKSIZE=1024,
+//            SPACE=(1024,(200,20))
+//SYSPRINT DD SYSOUT=*
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)
+//         DD DDNAME=SYSIN
+//SYSIN    DD *,SYMBOLS=EXECSYS
+  INCLUDE SYSLIB(DFHELII)
+  INCLUDE SYSLIB(DSNCLI)
+  NAME &MEM.(R)
+/*
+//         ENDIF
+//*  *************************************************************
+//*        BIND Package dans Db2
+//*  *************************************************************
+//         IF RC <= 4 THEN
+//BIND     EXEC PGM=IKJEFT01,DYNAMNBR=20
+//DBRMLIB   DD DISP=SHR,DSN=CICSCFG.GENAPP.CICSMOBP.DBRMLIB
+//SYSTSPRT  DD SYSOUT=*
+//SYSPRINT  DD SYSOUT=*
+//SYSIN     DD *,SYMBOLS=EXECSYS
+   GRANT BIND, EXECUTE ON PLAN &MEM. TO PUBLIC;
+   GRANT BIND, EXECUTE ON PACKAGE &MEM..* TO PUBLIC;
+//SYSTSIN   DD *,SYMBOLS=EXECSYS
+  DSN SYSTEM(&DB2.)
+  BIND PACKAGE(&MEM.) MEMBER(&MEM.) -
+    ISOLATION(UR) QUALIFIER(PHONEBOOK)
+  BIND PLAN(&MEM.) PKLIST(&MEM..*)
+  RUN PROGRAM(DSNTIAD) PLAN(DSNTIA12) -
+    LIB('DBC0CFG.RUNLIB.LOAD')
+/*
+//         ENDIF
+//

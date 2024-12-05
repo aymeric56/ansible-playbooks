@@ -34,7 +34,6 @@
         # - { membre: 'API00Q01', fichier: 'API00Q01.cpy' }
         # - { membre: 'BAQHAREC', fichier: 'BAQHAREC.cpy' }
         # - { membre: 'BAQHCONC', fichier: 'BAQHCONC.cpy' }
-        # - { membre: 'BAQRINFO', fichier: 'BAQRINFO.cpy' }
         # - { membre: 'PBOOKCIN', fichier: 'PBOOKCIN.cpy' }
         # - { membre: 'PBOOKCO1', fichier: 'PBOOKCO1.cpy' }
         # - { membre: 'PBOOKCO2', fichier: 'PBOOKCO2.cpy' }
