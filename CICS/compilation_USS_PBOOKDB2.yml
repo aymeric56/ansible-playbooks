@@ -14,12 +14,6 @@
     scope: 'CICSMOBP'
     scheme: 'http'
 
-  # vars_prompt:
-  #  - name: cmci_user
-  #    prompt: CMCI user name (leave blank for unauthenticated)
-  #  - name: cmci_password
-  #    prompt: CMCI password (leave blank for unauthenticated)
-
   tasks:
     - name: Compress Directory contents
       ansible.builtin.archive:
@@ -32,7 +26,7 @@
     - name: Copy an extract the zip file to z/OS
       ibm.ibm_zos_core.zos_unarchive:
         src: ./CICS/programs/PhoneBook.zip
-        dest: "/u/aymeric/SRC_CICS"
+        dest: /u/aymeric/SRC_CICS
         format: 
           name: zip
         force: true
@@ -45,49 +39,22 @@
     - name: Execute the command in remote shell
       ansible.builtin.shell: /u/aymeric/SRC_CICS/iconv_80col.sh
 
-    - name: Create temporary directory for the compilation JCL
-      ansible.builtin.tempfile:
-        state: directory
-      register: temp_file_path
-      delegate_to: localhost
-
-    - name: Compile templates and put results in temporary directory
-      ansible.builtin.template:
-        src: "./templates/COMPCDB2_coprocessor_USS.j2"
-        dest: "{{ temp_file_path.path }}/COMPCDB2.j2"
-        output_encoding: ISO8859-1
-        mode: '0644'
-      delegate_to: localhost
-
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COMPCDB2.j2"
+        src: ./templates/COMPCDB2_coprocessor_USS.j2
         location: local
-        wait_time_s: 20
+        use_template: true
+        wait_time_s: 15
         max_rc: 4
         encoding:
           from: ISO8859-1
           to: IBM-037
       register: respcompil
-      ignore_errors: true
 
     - name: Output Soumission Compil
       ansible.builtin.debug:
         msg: "{{ respcompil.jobs[0].ddnames[0].content }}"
 
-    ############################################################################
-    # Install module dependencies
-    ############################################################################
-    # - name: Make sure CMCI module dependencies are installed
-    #   ansible.builtin.pip:
-    #     name:
-    #       - requests
-    #       - xmltodict
-    #       - typing;python_version<"3.5"
-
-    ############################################################################
-    # NEWCOPY
-    ############################################################################
     - name: NEWCOPY PROGRAM in CICS
       delegate_to: localhost
       ibm.ibm_zos_cics.cmci_action:
@@ -105,7 +72,7 @@
             program: '{{ pgmtocompile }}'
       register: outnewcopy
 
-    - name: OutNewcopy CICS
+    - name: Output of the CICS NEWCOPY
       ansible.builtin.debug:
         msg:
           - { "CMCI failed": "{{ outnewcopy.failed }}",

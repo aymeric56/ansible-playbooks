@@ -633,7 +633,7 @@
                     SET NUMTOSTRING9 TO OUT-REC-IDX
                  END-IF
                  STRING NUMTOSTRINGX DELIMITED BY SPACE
-                       ' contacts trouvé(s)' DELIMITED BY SIZE
+                       ' contact(s) trouvé(es)' DELIMITED BY SIZE
                   INTO responseMessage OF messageOutput2
               WHEN OTHER
                  DISPLAY 'SHOW50-CONTACTS - BAD SQLCODE : '

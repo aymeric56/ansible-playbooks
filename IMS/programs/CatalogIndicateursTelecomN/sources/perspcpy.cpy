@@ -1,0 +1,44 @@
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE AREA FOR NEW TABLES
+      ******************************************************************
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION INPUT
+      ******************************************************************
+       01 ENTREE-SP.
+          05 INSP-COMMAND             PIC X(8).
+          05 INSP-RECORD              PIC X(1110).
+      * PERSPECTIVE
+          05 INSP-RECORD-PERSP REDEFINES INSP-RECORD.
+               07 INSP-PERSP-ID         PIC 9(10).
+               07 INSP-PERSP-NAME       PIC X(150).
+               07 INSP-PERSP-DES        PIC X(150).
+               07 FILLER                PIC X(800).
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION OUTPUT
+      ******************************************************************
+       01 SORTIE-SP.
+          05 OUTSP-MESSAGE            PIC X(40).
+          05 OUTSP-RECORD             PIC X(1110).
+      * PERSPECTIVE
+          05 OUTSP-RECORD-PERSP REDEFINES OUTSP-RECORD.
+               07 OUTSP-PERSP-ID        PIC 9(10).
+               07 OUTSP-PERSP-NAME      PIC X(150).
+               07 OUTSP-PERSP-DES       PIC X(150).
+               07 FILLER                PIC X(800).
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION OUTPUT - SORTIE-SP-50
+      ******************************************************************
+       01 SORTIE-SP-50.
+          05 OUTSP-MESSAGE-50         PIC X(40).
+          05 OUTSP-NUM-RECORDS-50     PIC S9(3).
+          05 OUTSP-RECORD-50-P        PIC X(16000).
+                07 OUTSP-RECORD-50             OCCURS 50 TIMES
+                                           INDEXED BY OUTSP-IDX.
+      * PERSPECTIVE STRUCTURE
+                   09 OUTSP-PERSP-ID-REC      PIC 9(10).
+                   09 OUTSP-PERSP-NAME-REC    PIC X(150).
+                   09 OUTSP-PERSP-DES-REC     PIC X(150).
+                07 FILLER                 PIC X(500).

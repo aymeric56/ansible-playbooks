@@ -3,7 +3,7 @@
 ## IMS
 - compilation of a COBOL program & free region
 
-`ansible-playbook -i inventories IMS/compilation_USS_COBOL_DB2.yml`
+`ansible-playbook -i inventories IMS/compilation_USS_PhoneBook_DB2.yml`
 
 `ansible-playbook -i inventories IMS/pgm_compilation_COBOL_DB2.yml`
 
@@ -20,6 +20,7 @@
 
 `ansible-playbook -i inventories -e @secrets.enc --vault-password-file password_file CICS/compil_pgm_PBOOKCMN.yml`
 - compilation of a COBOL program with SQL statements & Newcopy in CICS
+
 `ansible-playbook -i inventories -e @secrets.enc --vault-password-file password_file CICS/compilation_USS_PBOOKDB2.yml`
 
 `ansible-playbook -i inventories -e @secrets.enc --vault-password-file password_file CICS/compil_pgm_PBOOKDB2.yml`

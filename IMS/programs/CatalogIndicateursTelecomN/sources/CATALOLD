@@ -1,0 +1,335 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CATALOG.
+
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE AREA
+      ******************************************************************
+       COPY CATACPY2.
+
+      ******************************************************************
+      *Host variables
+      ******************************************************************
+       01 W-HOSTVAR-CATALOGUE.
+          05 W-NB-PERSP                      PIC 9(4).
+          05 W-NB-OBJ-MAX                    PIC 9(4).
+          05 W-NB-LEV-MAX                    PIC 9(4).
+          05 W-NB-IND-MAX                    PIC 9(4).
+          05 W-PERSP OCCURS 0 TO 20 TIMES DEPENDING ON W-NB-PERSP.
+              07 W-PERSP-ID                 PIC 9(10).
+              07 W-PERSP-NAME               PIC X(150).
+              07 W-PERSP-DESC               PIC X(150).
+              07 W-NB-OBJ                   PIC 9(4).
+              07 W-OBJ OCCURS 0 TO 20 TIMES DEPENDING ON W-NB-OBJ-MAX.
+                 09 W-OBJ-ID                PIC 9(10).
+                 09 W-OBJ-NAME              PIC X(150).
+                 09 W-NB-LEV                PIC 9(4).
+                 09 W-LEV OCCURS 0 TO 20 TIMES
+                    DEPENDING ON W-NB-LEV-MAX.
+                    11 W-LEV-ID             PIC 9(10).
+                    11 W-LEV-NAME           PIC X(150).
+                    11 W-NB-IND             PIC 9(4).
+                    11 W-IND OCCURS 0 TO 20 TIMES
+                       DEPENDING ON W-NB-IND-MAX.
+                       13 W-IND-ID          PIC 9(10).
+                       13 W-IND-NAME        PIC X(150).
+                       13 W-IND-DEFINITION  PIC X(150).
+                       13 W-IND-NATURE      PIC X(20).
+                       13 W-IND-MESURABLE   PIC X(1).
+                       13 W-IND-PERIMETRE   PIC X(20).
+                       13 W-IND-TYPE        PIC X(20).
+                       13 W-IND-SOURCE      PIC X(150).
+
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+
+      * Pointer to API-INFO structure
+       01 WS-API-INFO        USAGE POINTER VALUE NULL.
+
+      * Data Area name to get
+       01 WS-DATA-AREA-NAME  PIC X(16).
+
+      * The address of a returned Data Area Element
+       01 WS-ELEMENT         USAGE POINTER VALUE NULL.
+
+      * Length of element for BAQGETN call.
+       01 WS-ELEMENT-LENGTH  PIC 9(9) COMP-5.
+
+      * Prepare to print messages to the log
+       01 WS-FAIL-TYPE       PIC X(18) VALUE SPACES.
+       01 WS-CC9             PIC 9(5).
+       01 WS-RC9             PIC 9(5).
+       01 WS-ST9             PIC 9(5).
+
+      * Display this message to CICS log
+       01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
+
+       LINKAGE SECTION.
+
+       01 IOPCBA POINTER.
+       01 ALTPCBA POINTER.
+
+      ******************************************************************
+      *I/O PCB
+      ******************************************************************
+
+       01 LTERMPCB.
+          05 LOGTTERM               PIC  X(08).
+          05 FILLER                 PIC  X(02).
+          05 TPSTAT                 PIC  X(02).
+             88 TPSTAT-OK                         VALUE SPACE.
+             88 TPSTAT-NOMORE                     VALUE 'QC'.
+             88 TPSTAT-EXIST                      VALUE 'CF'.
+          05 IODATE                 PIC  X(04).
+          05 IOTIME                 PIC  X(04).
+          05 FILLER                 PIC  X(02).
+          05 SEQNUM                 PIC  X(02).
+          05 MOD                    PIC  X(08).
+
+      ******************************************************************
+      *ALTPCB
+      ******************************************************************
+
+       01 ALTPCB.
+          05 LOGTTERM1              PIC  X(08).
+          05 FILLER1                PIC  X(02).
+          05 TPSTAT1                PIC  X(02).
+          05 IODATE1                PIC  X(04).
+          05 IOTIME1                PIC  X(04).
+          05 FILLER1                PIC  X(02).
+          05 SEQNUM1                PIC  X(02).
+          05 MOD1                   PIC  X(08).
+
+      ******************************************************************
+      * PROCEDURE DIVISION FOR DISPLAY CATALOGUE
+      ******************************************************************
+       PROCEDURE DIVISION.
+           ENTRY "DLITCBL"
+           USING IOPCBA
+                 ALTPCBA
+           .
+
+       BEGIN.
+           SET ADDRESS OF LTERMPCB TO ADDRESS OF IOPCBA
+
+           MOVE 0 TO TERM-IO
+
+           PERFORM WITH TEST BEFORE UNTIL TERM-IO = 1
+               INITIALIZE INPUT-MSG-UNITAIRE
+               INITIALIZE OUTPUT-MSG-UNITAIRE
+               MOVE SPACES TO INPUT-MSG-UNITAIRE
+               MOVE SPACES TO OUTPUT-MSG-UNITAIRE
+
+               CALL 'CBLTDLI' USING GU
+                                    LTERMPCB
+                                    INPUT-MSG-UNITAIRE
+
+               DISPLAY 'INPUT MESSAGE: ' INPUT-MSG-UNITAIRE
+
+               EVALUATE TRUE
+               WHEN TPSTAT-OK
+               WHEN TPSTAT-EXIST
+                    PERFORM DISPLAY-CATALOGUE
+               WHEN TPSTAT-NOMORE
+                    MOVE 1 TO TERM-IO
+               WHEN OTHER
+                    DISPLAY 'ERROR: ' TPSTAT
+               END-EVALUATE
+
+               DISPLAY 'OUTPUT MESSAGE: ' OUTPUT-MSG-UNITAIRE
+           END-PERFORM
+           STOP RUN
+           .
+
+      *----------------------------------------------------------------*
+      * DISPLAY-CATALOGUE PROCEDURE
+      *----------------------------------------------------------------*
+       DISPLAY-CATALOGUE.
+           EXEC SQL SELECT NB_PERSP,
+                           NB_OBJ_MAX,
+                           NB_LEV_MAX,
+                           NB_IND_MAX
+                INTO :W-NB-PERSP,
+                     :W-NB-OBJ-MAX,
+                     :W-NB-LEV-MAX,
+                     :W-NB-IND-MAX
+                FROM CATALOGUE
+           END-EXEC
+
+           IF SQLCODE = 0 THEN
+               PERFORM LOAD-PERSPECTIVES
+               MOVE 'DISPLAYED' TO OUT-MESSAGE
+           ELSE
+               MOVE 'DISPLAY FAILED' TO OUT-MESSAGE
+               DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           END-IF
+           .
+
+      *----------------------------------------------------------------*
+      * LOAD-PERSPECTIVES PROCEDURE
+      *----------------------------------------------------------------*
+       LOAD-PERSPECTIVES.
+           EXEC SQL DECLARE PERSP-CURSOR CURSOR FOR
+               SELECT PERSP_ID,
+                      PERSP_NAME,
+                      PERSP_DESC
+               FROM PERSPECTIVE
+           END-EXEC
+
+           EXEC SQL OPEN PERSP-CURSOR END-EXEC
+
+           PERFORM VARYING W-PERSP-ID FROM 1 BY 1 UNTIL SQLCODE <> 0
+               EXEC SQL FETCH PERSP-CURSOR
+                    INTO :W-PERSP(W-PERSP-ID).W-PERSP-ID,
+                         :W-PERSP(W-PERSP-ID).W-PERSP-NAME,
+                         :W-PERSP(W-PERSP-ID).W-PERSP-DESC
+               END-EXEC
+
+               IF SQLCODE = 0 THEN
+                   PERFORM LOAD-OBJECTIVES
+               ELSE
+                   DISPLAY 'ERROR WHILE FETCHING PERSPECTIVES: ' SQLCODE
+               END-IF
+           END-PERFORM
+
+           EXEC SQL CLOSE PERSP-CURSOR END-EXEC
+           .
+
+      *----------------------------------------------------------------*
+      * LOAD-OBJECTIVES PROCEDURE
+      *----------------------------------------------------------------*
+       LOAD-OBJECTIVES.
+           PERFORM VARYING W-OBJ-ID FROM 1 BY 1 UNTIL W-NB-OBJ = 0
+               EXEC SQL DECLARE OBJ-CURSOR CURSOR FOR
+                   SELECT OBJ_ID,
+                          OBJ_NAME
+                   FROM OBJECTIF
+                   WHERE PERSP_ID = :W-PERSP(W-PERSP-ID).W-PERSP-ID
+               END-EXEC
+
+               EXEC SQL OPEN OBJ-CURSOR END-EXEC
+
+               PERFORM UNTIL SQLCODE <> 0
+                   EXEC SQL FETCH OBJ-CURSOR
+                        INTO
+                        :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).W-OBJ-ID,
+                        :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).W-OBJ-NAME
+                   END-EXEC
+
+                   IF SQLCODE = 0 THEN
+                       PERFORM LOAD-LEVERS
+                   ELSE
+                       DISPLAY
+                       'ERROR WHILE FETCHING OBJECTIVES: ' SQLCODE
+                   END-IF
+               END-PERFORM
+
+               EXEC SQL CLOSE OBJ-CURSOR END-EXEC
+           END-PERFORM
+           .
+
+      *----------------------------------------------------------------*
+      * LOAD-LEVIERS PROCEDURE
+      *----------------------------------------------------------------*
+       LOAD-LEVIERS.
+           PERFORM VARYING W-LEV-ID FROM 1 BY 1 UNTIL W-NB-LEV = 0
+               EXEC SQL DECLARE LEV-CURSOR CURSOR FOR
+                   SELECT LEV_ID,
+                          LEV_NAME
+                   FROM LEVIER
+                   WHERE OBJ_ID =
+                    :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).W-OBJ-ID
+               END-EXEC
+
+               EXEC SQL OPEN LEV-CURSOR END-EXEC
+
+               PERFORM UNTIL SQLCODE <> 0
+                   EXEC SQL FETCH LEV-CURSOR
+                        INTO
+                        :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                          W-LEV(W-LEV-ID).W-LEV-ID,
+
+                        :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                          W-LEV(W-LEV-ID).W-LEV-NAME
+                   END-EXEC
+
+                   IF SQLCODE = 0 THEN
+                       PERFORM LOAD-INDICATORS
+                   ELSE
+                       DISPLAY 'ERROR WHILE FETCHING LEVERS: ' SQLCODE
+                   END-IF
+               END-PERFORM
+
+               EXEC SQL CLOSE LEV-CURSOR END-EXEC
+           END-PERFORM
+           .
+
+      *----------------------------------------------------------------*
+      * LOAD-INDICATORS PROCEDURE
+      *----------------------------------------------------------------*
+       LOAD-INDICATORS.
+           PERFORM VARYING W-IND-ID FROM 1 BY 1 UNTIL W-NB-IND = 0
+               EXEC SQL DECLARE IND-CURSOR CURSOR FOR
+                   SELECT IND_ID,
+                          IND_NAME,
+                          IND_DEFINITION,
+                          IND_NATURE,
+                          IND_MESURABLE,
+                          IND_PERIMETRE,
+                          IND_TYPE,
+                          IND_SOURCE
+                   FROM INDICATEUR
+                   WHERE LEV_ID =
+                   :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                    W-LEV(W-LEV-ID).W-LEV-ID
+               END-EXEC
+
+               EXEC SQL OPEN IND-CURSOR END-EXEC
+
+               PERFORM UNTIL SQLCODE <> 0
+                   EXEC SQL FETCH IND-CURSOR
+                        INTO :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-ID,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-NAME,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                             W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-DEFINITION,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-NATURE,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-MESURABLE,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-PERIMETRE,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-TYPE,
+                             :W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                                W-LEV(W-LEV-ID).W-IND(W-IND-ID).
+                                W-IND-SOURCE
+                   END-EXEC
+
+                   IF SQLCODE = 0 THEN
+                       DISPLAY 'INDICATOR: '
+                          W-PERSP(W-PERSP-ID).W-OBJ(W-OBJ-ID).
+                          W-LEV(W-LEV-ID).W-IND(W-IND-ID).W-IND-NAME
+                   ELSE
+                       DISPLAY 'ERROR WHILE FETCHING INDICATORS: '
+                          SQLCODE
+                   END-IF
+               END-PERFORM
+
+               EXEC SQL CLOSE IND-CURSOR END-EXEC
+           END-PERFORM
+           .
+

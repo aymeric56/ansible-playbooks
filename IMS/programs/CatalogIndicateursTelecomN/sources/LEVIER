@@ -1,0 +1,301 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LEVIER.
+
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      * MESSAGE PROCESSING
+       77 VALID-INPUT               PIC 9         VALUE 0.
+       77 TERM-IO                   PIC 9         VALUE 0.
+       77 TERM-LOOP                 PIC 9         VALUE 0.
+       77 DISP-SQLCODE              PIC +ZZZZZZZZ9.
+
+      ******************************************************************
+      *VARIABLES AREAS
+      ******************************************************************
+       01 NUMTOSTRING.
+          05 NUMTOSTRINGX           PIC X(2).
+          05 NUMTOSTRING9 REDEFINES NUMTOSTRINGX
+                                    PIC 9(2).
+
+      ******************************************************************
+      *Host variables
+      ******************************************************************
+       01 W-HOSTVAR-IMSVIP.
+          05 W-LEV-ID               PIC S9(10) COMP.
+          05 W-OBJ-ID               PIC S9(10) COMP.
+          05 W-LEV-NAME             PIC X(150).
+
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+
+      * Pointer to API-INFO structure
+       01 WS-API-INFO        USAGE POINTER VALUE NULL.
+
+      * Data Area name to get
+       01 WS-DATA-AREA-NAME  PIC X(16).
+
+      * The address of a returned Data Area Element
+       01 WS-ELEMENT         USAGE POINTER VALUE NULL.
+
+      * Length of element for BAQGETN call.
+       01 WS-ELEMENT-LENGTH  PIC 9(9) COMP-5.
+
+      * Prepare to print messages to the log
+       01 WS-FAIL-TYPE       PIC X(18) VALUE SPACES.
+       01 WS-CC9             PIC 9(5).
+       01 WS-RC9             PIC 9(5).
+       01 WS-ST9             PIC 9(5).
+
+      * Display this message to CICS log
+       01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
+
+      *    POUR DISPLAY SQLCODE
+       01  W-SQLCODE PIC S999.
+       01  SQLCODE-POUR-DISPLAY PIC ----.
+
+       LINKAGE SECTION.
+
+       COPY LEVCPY.
+
+
+      *----------------------------------------------------------------*
+      * PROCEDURE DIVISION FOR LEVIER CRUD OPERATIONS
+      *----------------------------------------------------------------*
+       PROCEDURE DIVISION USING ENTREE-SL SORTIE-SL SORTIE-SL-50.
+
+       BEGIN.
+
+               INITIALIZE SORTIE-SL
+               MOVE SPACES TO SORTIE-SL
+               INITIALIZE SORTIE-SL-50
+               MOVE SPACES TO OUTSL-MESSAGE-50
+               MOVE 0 TO OUTSL-NUM-RECORDS-50
+
+               DISPLAY "Dans LEV !"
+
+               EVALUATE INSL-COMMAND
+                       WHEN 'LADD    '
+                            PERFORM ADD-LEV
+                       WHEN 'LDISPLAY'
+                            PERFORM DISPLAY-LEV
+                       WHEN 'LSHOW50'
+                            PERFORM SHOW50-LEVIERS
+                       WHEN 'LUPDATE '
+                            PERFORM UPDATE-LEV
+                       WHEN 'LDELETE '
+                            PERFORM DELETE-LEV
+                       WHEN OTHER
+                            DISPLAY 'INVALID COMMAND RECEIVED:'
+                                      INSL-COMMAND
+               END-EVALUATE
+
+           GOBACK
+           .
+
+      *----------------------------------------------------------------*
+      * ADD-LEV PROCEDURE
+      *----------------------------------------------------------------*
+       ADD-LEV.
+
+           DISPLAY "INSL-LEV-NAME : " INSL-LEV-NAME
+           DISPLAY "INSL-OBJ-ID : " INSL-OBJ-ID
+
+           MOVE INSL-LEV-NAME TO W-LEV-NAME
+           MOVE INSL-OBJ-ID TO W-OBJ-ID
+
+           EXEC SQL INSERT INTO LEVIER (
+                      nom_levier,
+                      id_objectif
+
+                          )
+                VALUES (
+                      :W-LEV-NAME,
+                      :W-OBJ-ID
+
+                      )
+           END-EXEC
+
+           DISPLAY "SQL code : " SQLCODE
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'ADDED' TO OUTSL-MESSAGE
+                MOVE INSL-RECORD-LEV TO OUTSL-RECORD-LEV
+           WHEN +100
+                MOVE 'ADD FAILED' TO OUTSL-MESSAGE
+                PERFORM DISPLAY-SQL-CODE
+           WHEN OTHER
+                MOVE 'ADD FAILED' TO OUTSL-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+                PERFORM DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DISPLAY-LEV PROCEDURE
+      *----------------------------------------------------------------*
+       DISPLAY-LEV.
+           DISPLAY 'Je passe dans DISPLAY-LEV   '
+           MOVE INSL-LEV-ID TO W-LEV-ID
+           EXEC SQL SELECT id_levier,
+                           id_objectif,
+                           nom_levier
+
+                INTO :W-LEV-ID,
+                     :W-OBJ-ID,
+                     :W-LEV-NAME
+                FROM LEVIER
+                WHERE id_levier = :W-LEV-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DISPLAYED' TO OUTSL-MESSAGE
+                MOVE W-LEV-ID TO OUTSL-LEV-ID
+                MOVE W-OBJ-ID TO OUTSL-OBJ-ID
+                MOVE W-LEV-NAME TO OUTSL-LEV-NAME
+           WHEN +100
+                MOVE 'DISPLAY FAILED' TO OUTSL-MESSAGE
+           WHEN OTHER
+                MOVE 'DISPLAY FAILED' TO OUTSL-MESSAGE
+                PERFORM DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * SHOW 50 LEVIERS PROCEDURE
+      *----------------------------------------------------------------*
+       SHOW50-LEVIERS.
+           DISPLAY 'D‚but de SHOW50 LEVIERS'
+           MOVE 0 TO TERM-LOOP
+           MOVE 0 TO OUTSL-NUM-RECORDS-50
+           MOVE 0 TO NUMTOSTRING9
+
+           MOVE INSL-LEV-ID TO W-LEV-ID
+
+           SET OUTSL-IDX TO 1
+           EXEC SQL DECLARE SHOW50-CURS CURSOR FOR
+                SELECT id_levier,
+                       id_objectif,
+                       nom_levier
+                FROM LEVIER
+                WHERE id_levier >= :W-LEV-ID
+                ORDER BY id_levier
+           END-EXEC
+
+           EXEC SQL
+                OPEN SHOW50-CURS
+           END-EXEC
+
+      * R‚cup‚ration des r‚sultats
+           PERFORM UNTIL(SQLCODE NOT = 0)
+              OR (OUTSL-NUM-RECORDS-50 >= 50)
+                   EXEC SQL
+                        FETCH SHOW50-CURS
+                        INTO :W-LEV-ID,
+                             :W-OBJ-ID,
+                             :W-LEV-NAME
+                   END-EXEC
+                   IF SQLCODE = 0
+                      SET NUMTOSTRING9 TO OUTSL-IDX
+                      MOVE W-LEV-ID TO OUTSL-LEV-ID-REC(OUTSL-IDX)
+                      MOVE W-OBJ-ID TO OUTSL-OBJ-ID-REC(OUTSL-IDX)
+                      MOVE W-LEV-NAME TO OUTSL-LEV-NAME-REC(OUTSL-IDX)
+                      SET OUTSL-IDX UP BY 1
+                   END-IF
+           END-PERFORM
+
+      * Gestion des fins de liste ou erreurs SQL
+           EVALUATE SQLCODE
+           WHEN 0
+                SET OUTSL-IDX DOWN BY 1
+                SET OUTSL-NUM-RECORDS-50 TO OUTSL-IDX
+                IF OUTSL-NUM-RECORDS-50 >= 50
+                   MOVE 'R‚sultats tronqu‚s … 50' TO OUTSL-MESSAGE-50
+                ELSE
+                   MOVE 'Fin de la liste' TO OUTSL-MESSAGE-50
+                END-IF
+
+           WHEN +100
+                SET OUTSL-IDX DOWN BY 1
+                IF OUTSL-IDX >= 1
+                   SET NUMTOSTRING9 TO OUTSL-IDX
+                   MOVE NUMTOSTRING9 TO OUTSL-NUM-RECORDS-50
+                END-IF
+                STRING NUMTOSTRING9 DELIMITED BY SPACE
+                       ' leviers trouv‚s' DELIMITED BY SIZE
+                   INTO OUTSL-MESSAGE-50
+
+           WHEN OTHER
+                MOVE 'Erreur SQL' TO OUTSL-MESSAGE-50
+
+           END-EVALUATE
+
+           EXEC SQL
+                CLOSE SHOW50-CURS
+           END-EXEC
+           .
+
+      *----------------------------------------------------------------*
+      * UPDATE-LEV PROCEDURE
+      *----------------------------------------------------------------*
+       UPDATE-LEV.
+           MOVE INSL-LEV-ID   TO W-LEV-ID
+           MOVE INSL-LEV-NAME TO W-LEV-NAME
+           MOVE INSL-OBJ-ID   TO W-OBJ-ID
+
+           EXEC SQL UPDATE LEVIER
+                SET nom_levier  = :W-LEV-NAME,
+                    id_objectif = :W-OBJ-ID
+                WHERE id_levier = :W-LEV-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'UPDATED' TO OUTSL-MESSAGE
+                MOVE INSL-RECORD-LEV TO OUTSL-RECORD-LEV
+           WHEN +100
+                MOVE 'UPDATE FAILED' TO OUTSL-MESSAGE
+           WHEN OTHER
+                MOVE 'UPDATE FAILED' TO OUTSL-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DELETE-LEV PROCEDURE
+      *----------------------------------------------------------------*
+       DELETE-LEV.
+           DISPLAY 'Lev ID : ' INSL-LEV-ID
+           MOVE INSL-LEV-ID TO W-LEV-ID
+
+           EXEC SQL DELETE FROM LEVIER
+                WHERE id_levier = :W-LEV-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DELETED' TO OUTSL-MESSAGE
+           WHEN +100
+                MOVE 'DELETE FAILED' TO OUTSL-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           WHEN OTHER
+                MOVE 'DELETE FAILED' TO OUTSL-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           END-EVALUATE
+           .
+
+      * Permet de r‚cup‚rer plus d'informations sur l'erreur SQL
+       DISPLAY-SQL-CODE.
+           MOVE SQLCODE TO DISP-SQLCODE
+           DISPLAY 'SQLCODE  : ' DISP-SQLCODE
+           DISPLAY 'SQLSTATE : ' SQLSTATE
+           DISPLAY 'SQLERRML : ' SQLERRML
+           DISPLAY 'SQLERRMC : ' SQLERRMC
+           .
+
+       END PROGRAM LEVIER.

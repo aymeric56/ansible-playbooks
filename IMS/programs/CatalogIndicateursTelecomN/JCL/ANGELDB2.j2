@@ -1,0 +1,76 @@
+//DB2CREDB   JOB 0,'A AYME',                                            JOB07928
+//             NOTIFY=&SYSUID.,CLASS=W,MSGCLASS=H                       00020000
+//*                                                                     00040000
+//             SET SYS=DBC1,DB2PREF=DBC0CFG,DB2=DB2.V12
+//*                                                                     00040000
+//*
+//*
+//DDL      PROC
+//DDL      EXEC PGM=IKJEFT01,DYNAMNBR=20                                00550000
+//STEPLIB   DD DSN=&DB2PREF..&DB2..SDSNLOAD,DISP=SHR                    00220000
+//          DD DISP=SHR,DSN=&DB2PREF..&DB2..SDSNEXIT                    00220000
+//SYSTSPRT  DD SYSOUT=*                                                 00560000
+//SYSTSIN   DD DISP=(SHR,PASS),DSN=*.GENER.SYSLIN                       00570000
+//SYSPRINT  DD SYSOUT=*                                                 00610000
+//         PEND
+//*
+//*
+//*
+//GENER    EXEC PGM=ASMA90,REGION=0K,PARM='OBJ,NODECK,SYSPARM(&SYS.)'
+//SYSLIB    DD DSN=SYS1.MACLIB,DISP=SHR
+//SYSLIN    DD UNIT=SYSDA,DISP=(,PASS),
+//             SPACE=(TRK,(1,1),RLSE),RECFM=FB,LRECL=80
+//SYSUT1    DD UNIT=SYSDA,SPACE=(CYL,(1,1))
+//SYSPRINT  DD SYSOUT=*
+//SYSIN     DD *
+ PUNCH ' DSN SYSTEM(&SYSPARM.)'
+ PUNCH ' RUN  PROGRAM(DSNTIAD) PLAN(DSNTIA12) -'
+ PUNCH '      LIB(''DBC0CFG.RUNLIB.LOAD'')'
+ END
+//*********************************************************************
+//*
+//*        STEP  1: CREATE SAMPLE STORAGE GROUPS, TABLESPACES
+//*
+//*********************************************************************
+//STEP2    EXEC DDL
+//SYSIN     DD  *
+  DROP INDEX TELECOMN.indicateur_index;
+  DROP TABLE TELECOMN.Indicateur;
+  COMMIT;
+
+  CREATE TABLE TELECOMN.Indicateur (
+      id_indicateur NUMERIC(10) GENERATED ALWAYS AS IDENTITY
+        (START WITH 1, INCREMENT BY 1, NO CYCLE),
+      exemple CHAR(150),
+      definition CHAR(100),
+      nature VARCHAR(20) CHECK (nature IN ('quantitatif',
+                   'qualitatif')),
+      mesurable SMALLINT,
+      scope CHAR(20) CHECK (scope IN ('interne', 'externe')),
+      type CHAR(20) CHECK (type IN ('sp‚cifique', 'standard')),
+      source CHAR(255),
+      id_levier NUMERIC(10) NOT NULL,
+      PRIMARY KEY (id_indicateur),
+      FOREIGN KEY (id_levier)
+          REFERENCES TELECOMN.Levier (id_levier)
+          ON DELETE CASCADE
+  )
+  IN TELNAN24.TELNANS4
+  CCSID EBCDIC;
+
+  CREATE UNIQUE INDEX TELECOMN.indicateur_index
+  ON TELECOMN.Indicateur (id_indicateur ASC);
+
+  COMMIT;
+//*
+//*        STEP  3: OPERATIONS ON TABLES
+//*
+//         IF RC <= 4 THEN
+//STEP3    EXEC DDL
+//SYSIN     DD  *
+
+
+//         ENDIF
+//*
+//*        STEP  4: GRANT AUTHORITY
+//*

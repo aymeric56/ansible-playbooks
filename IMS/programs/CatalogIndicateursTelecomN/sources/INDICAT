@@ -1,0 +1,374 @@
+z       IDENTIFICATION DIVISION.
+       PROGRAM-ID. INDICAT.
+
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      * MESSAGE PROCESSING
+       77 VALID-INPUT               PIC 9         VALUE 0.
+       77 TERM-IO                   PIC 9         VALUE 0.
+       77 TERM-LOOP                 PIC 9         VALUE 0.
+       77 DISP-SQLCODE              PIC +ZZZZZZZZ9.
+
+      ******************************************************************
+      *VARIABLES AREAS
+      ******************************************************************
+       01 NUMTOSTRING.
+          05 NUMTOSTRINGX           PIC X(2).
+          05 NUMTOSTRING9 REDEFINES NUMTOSTRINGX
+                                    PIC 9(2).
+      ******************************************************************
+      *Host variables
+      ******************************************************************
+       01 W-HOSTVAR-IMSVIP.
+         05 W-IND-ID,              PIC S9(10) COMP.
+         05 W-LEV-ID               PIC S9(10) COMP.
+         05 W-IND-EXEMPLE,         PIC X(150).
+         05 W-IND-DEFINITION,      PIC X(100).
+         05 W-IND-NATURE,          PIC X(150).
+         05 W-IND-MESURABLE,       PIC S9(2) COMP.
+         05 W-IND-SCOPE,           PIC X(150).
+         05 W-IND-TYPE,            PIC X(150).
+         05 W-IND-SOURCE           PIC X(255).
+
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+      *    EXEC SQL INCLUDE SYSLIB END-EXEC.
+      *    EXEC SQL INCLUDE INDICATEUR END-EXEC.
+
+      * Pointer to API-INFO structure
+       01 WS-API-INFO        USAGE POINTER VALUE NULL.
+
+      * Data Area name to get
+       01 WS-DATA-AREA-NAME  PIC X(16).
+
+      * The address of a returned Data Area Element
+       01 WS-ELEMENT         USAGE POINTER VALUE NULL.
+
+      * Length of element for BAQGETN call.
+       01 WS-ELEMENT-LENGTH  PIC 9(9) COMP-5.
+
+      * Prepare to print messages to the log
+       01 WS-FAIL-TYPE       PIC X(18) VALUE SPACES.
+       01 WS-CC9             PIC 9(5).
+       01 WS-RC9             PIC 9(5).
+       01 WS-ST9             PIC 9(5).
+
+      * Display this message to CICS log
+       01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
+
+      *    POUR DISPLAY SQLCODE
+       01  W-SQLCODE PIC S999.
+       01  SQLCODE-POUR-DISPLAY PIC ----.
+
+       LINKAGE SECTION.
+
+       COPY INDCPY.
+
+      *----------------------------------------------------------------*
+      * PROCEDURE DIVISION FOR INDICATEUR CRUD OPERATIONS
+      *----------------------------------------------------------------*
+       PROCEDURE DIVISION USING ENTREE-SI SORTIE-SI SORTIE-SI-50.
+
+       BEGIN.
+
+               INITIALIZE SORTIE-SI
+               MOVE SPACES TO SORTIE-SI
+               INITIALIZE SORTIE-SI-50
+               MOVE SPACES TO OUTSI-MESSAGE-50
+               MOVE 0 TO OUTSI-NUM-RECORDS-50
+
+               DISPLAY "Dans Indicat !"
+
+               EVALUATE INSI-COMMAND
+                       WHEN 'IADD    '
+                            PERFORM ADD-INDICATEUR
+                       WHEN 'IDISPLAY'
+                            PERFORM DISPLAY-INDICATEUR
+                       WHEN 'ISHOW50'
+                            PERFORM SHOW50-INDICATEURS
+                       WHEN 'IUPDATE '
+                            PERFORM UPDATE-INDICATEUR
+                       WHEN 'IDELETE '
+                            PERFORM DELETE-INDICATEUR
+                       WHEN OTHER
+                            DISPLAY 'INVALID COMMAND RECEIVED:'
+                                      INSI-COMMAND
+               END-EVALUATE
+
+           GOBACK
+           .
+
+      *----------------------------------------------------------------*
+      * ADD-INDICATEUR PROCEDURE
+      *----------------------------------------------------------------*
+       ADD-INDICATEUR.
+
+           DISPLAY "INSI-IND-EXEMPLE : " INSI-IND-EXEMPLE
+
+           MOVE INSI-LEV-ID TO W-LEV-ID
+           MOVE INSI-IND-EXEMPLE TO W-IND-EXEMPLE
+           MOVE INSI-IND-DEFINITION TO W-IND-DEFINITION
+           MOVE INSI-IND-NATURE TO W-IND-NATURE
+           MOVE INSI-IND-MESURABLE TO W-IND-MESURABLE
+           MOVE INSI-IND-SCOPE TO W-IND-SCOPE
+           MOVE INSI-IND-TYPE TO W-IND-TYPE
+           MOVE INSI-IND-SOURCE TO W-IND-SOURCE
+
+           EXEC SQL INSERT INTO INDICATEUR (
+                      exemple,
+                      definition,
+                      nature,
+                      mesurable,
+                      scope,
+                      type,
+                      source,
+                      id_levier
+                   )
+                VALUES (
+                      :W-IND-EXEMPLE,
+                      :W-IND-DEFINITION,
+                      :W-IND-NATURE,
+                      :W-IND-MESURABLE,
+                      :W-IND-SCOPE,
+                      :W-IND-TYPE,
+                      :W-IND-SOURCE,
+                      :W-LEV-ID
+                   )
+           END-EXEC
+
+           DISPLAY "SQL code : " SQLCODE
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'ADDED' TO OUTSI-MESSAGE
+                MOVE INSI-RECORD-IND TO OUTSI-RECORD-IND
+           WHEN +100
+                MOVE 'ADD FAILED' TO OUTSI-MESSAGE
+                PERFORM DISPLAY-SQL-CODE
+           WHEN OTHER
+                MOVE 'ADD FAILED' TO OUTSI-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+                PERFORM DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DISPLAY-INDICATEUR PROCEDURE
+      *----------------------------------------------------------------*
+       DISPLAY-INDICATEUR.
+           DISPLAY 'Je passe dans DISPLAY-IND  '
+           MOVE INSI-IND-ID TO W-IND-ID
+           EXEC SQL SELECT id_indicateur,
+                           id_levier,
+                           exemple,
+                           definition,
+                           nature,
+                           mesurable,
+                           scope,
+                           type,
+                           source
+                INTO :W-IND-ID,
+                     :W-LEV-ID,
+                     :W-IND-EXEMPLE,
+                     :W-IND-DEFINITION,
+                     :W-IND-NATURE,
+                     :W-IND-MESURABLE,
+                     :W-IND-SCOPE,
+                     :W-IND-TYPE,
+                     :W-IND-SOURCE
+                FROM INDICATEUR
+                WHERE id_indicateur = :W-IND-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DISPLAYED' TO OUTSI-MESSAGE
+                MOVE W-LEV-ID TO OUTSI-LEV-ID
+                MOVE W-IND-ID TO OUTSI-IND-ID
+                MOVE W-IND-EXEMPLE TO OUTSI-IND-EXEMPLE
+                MOVE W-IND-DEFINITION TO OUTSI-IND-DEFINITION
+                MOVE W-IND-NATURE TO OUTSI-IND-NATURE
+                MOVE W-IND-MESURABLE TO OUTSI-IND-MESURABLE
+                MOVE W-IND-SCOPE TO OUTSI-IND-SCOPE
+                MOVE W-IND-TYPE TO OUTSI-IND-TYPE
+                MOVE W-IND-SOURCE TO OUTSI-IND-SOURCE
+           WHEN +100
+                MOVE 'DISPLAY FAILED' TO OUTSI-MESSAGE
+           WHEN OTHER
+                MOVE 'DISPLAY FAILED' TO OUTSI-MESSAGE
+                Perform DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * SHOW 50 INDICATEURS PROCEDURE
+      *----------------------------------------------------------------*
+       SHOW50-INDICATEURS.
+           DISPLAY 'D‚but de SHOW50 INDICATEURS'
+           MOVE 0 TO TERM-LOOP
+           MOVE 0 TO OUTSI-NUM-RECORDS-50
+           MOVE 0 TO NUMTOSTRING9
+
+           MOVE INSI-IND-ID TO W-IND-ID
+
+           SET OUTSI-IDX TO 1
+           EXEC SQL DECLARE SHOW50-CURS CURSOR FOR
+                SELECT id_indicateur,
+                       id_levier,
+                       exemple,
+                       definition,
+                       nature,
+                       mesurable,
+                       scope,
+                       type,
+                       source
+                FROM INDICATEUR
+                WHERE id_indicateur >= :W-IND-ID
+                ORDER BY id_indicateur
+           END-EXEC
+
+           EXEC SQL
+                OPEN SHOW50-CURS
+           END-EXEC
+
+      * R‚cup‚ration des r‚sultats
+           PERFORM UNTIL(SQLCODE NOT = 0)
+              OR (OUTSI-NUM-RECORDS-50 >= 50)
+                   EXEC SQL
+                        FETCH SHOW50-CURS
+                        INTO :W-IND-ID,
+                             :W-LEV-ID,
+                             :W-IND-EXEMPLE,
+                             :W-IND-DEFINITION,
+                             :W-IND-NATURE,
+                             :W-IND-MESURABLE,
+                             :W-IND-SCOPE,
+                             :W-IND-TYPE,
+                             :W-IND-SOURCE
+                        END-EXEC
+                   IF SQLCODE = 0
+                      SET NUMTOSTRING9 TO OUTSI-IDX
+
+                      MOVE W-IND-ID TO OUTSI-IND-ID-REC(OUTSI-IDX)
+                      MOVE W-LEV-ID TO OUTSI-LEV-ID-REC(OUTSI-IDX)
+                      MOVE W-IND-EXEMPLE
+                                   TO OUTSI-IND-EXEMPLE-REC(OUTSI-IDX)
+                      MOVE W-IND-DEFINITION
+                                TO OUTSI-IND-DEFINITION-REC(OUTSI-IDX)
+                      MOVE W-IND-NATURE
+                                TO OUTSI-IND-NATURE-REC(OUTSI-IDX)
+                      MOVE W-IND-MESURABLE
+                                TO OUTSI-IND-MESURABLE-REC(OUTSI-IDX)
+                      MOVE W-IND-SCOPE TO OUTSI-IND-SCOPE-REC(OUTSI-IDX)
+                      MOVE W-IND-TYPE TO OUTSI-IND-TYPE-REC(OUTSI-IDX)
+                      MOVE W-IND-SOURCE
+                                      TO OUTSI-IND-SOURCE-REC(OUTSI-IDX)
+                      SET OUTSI-IDX UP BY 1
+                   END-IF
+           END-PERFORM
+
+      * Gestion des fins de liste ou erreurs SQL
+           EVALUATE SQLCODE
+           WHEN 0
+                SET OUTSI-IDX DOWN BY 1
+                SET OUTSI-NUM-RECORDS-50 TO OUTSI-IDX
+                IF OUTSI-NUM-RECORDS-50 >= 50
+                   MOVE 'R‚sultats tronqu‚s … 50' TO OUTSI-MESSAGE-50
+                ELSE
+                   MOVE 'Fin de la liste' TO OUTSI-MESSAGE-50
+                END-IF
+
+           WHEN +100
+                SET OUTSI-IDX DOWN BY 1
+                IF OUTSI-IDX >= 1
+                   SET NUMTOSTRING9 TO OUTSI-IDX
+                   MOVE NUMTOSTRING9 TO OUTSI-NUM-RECORDS-50
+                END-IF
+                STRING NUMTOSTRING9 DELIMITED BY SPACE
+                       ' indicateurs trouv‚s' DELIMITED BY SIZE
+                   INTO OUTSI-MESSAGE-50
+
+           WHEN OTHER
+                MOVE 'Erreur SQL' TO OUTSI-MESSAGE-50
+
+           END-EVALUATE
+
+           EXEC SQL
+                CLOSE SHOW50-CURS
+                END-EXEC
+           .
+
+      *----------------------------------------------------------------*
+      * UPDATE-INDICATEUR PROCEDURE
+      *----------------------------------------------------------------*
+       UPDATE-INDICATEUR.
+           DISPLAY 'Je passe dans UPDATE-IND  '
+           MOVE INSI-LEV-ID TO W-LEV-ID
+           MOVE INSI-IND-ID TO W-IND-ID
+           MOVE INSI-IND-EXEMPLE TO W-IND-EXEMPLE
+           MOVE INSI-IND-DEFINITION TO W-IND-DEFINITION
+           MOVE INSI-IND-NATURE TO W-IND-NATURE
+           MOVE INSI-IND-MESURABLE TO W-IND-MESURABLE
+           MOVE INSI-IND-SCOPE TO W-IND-SCOPE
+           MOVE INSI-IND-TYPE TO W-IND-TYPE
+           MOVE INSI-IND-SOURCE TO W-IND-SOURCE
+
+           EXEC SQL UPDATE INDICATEUR
+                SET id_levier = :W-LEV-ID,
+                    exemple = :W-IND-EXEMPLE,
+                    definition = :W-IND-DEFINITION,
+                    nature = :W-IND-NATURE,
+                    mesurable = :W-IND-MESURABLE,
+                    scope = :W-IND-SCOPE,
+                    type = :W-IND-TYPE,
+                    source = :W-IND-SOURCE
+                WHERE id_indicateur = :W-IND-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'UPDATED' TO OUTSI-MESSAGE
+                MOVE INSI-RECORD-IND TO OUTSI-RECORD-IND
+           WHEN +100
+                MOVE 'UPDATE FAILED' TO OUTSI-MESSAGE
+           WHEN OTHER
+                MOVE 'UPDATE FAILED' TO OUTSI-MESSAGE
+                Perform DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DELETE-INDICATEUR PROCEDURE
+      *----------------------------------------------------------------*
+       DELETE-INDICATEUR.
+           MOVE INSI-IND-ID TO W-IND-ID
+
+           EXEC SQL DELETE FROM INDICATEUR
+                WHERE id_indicateur = :W-IND-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DELETED' TO OUTSI-MESSAGE
+           WHEN +100
+                MOVE 'DELETE FAILED' TO OUTSI-MESSAGE
+           WHEN OTHER
+                MOVE 'DELETE FAILED' TO OUTSI-MESSAGE
+                Perform DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      * Permet de r‚cup‚rer plus d'informations sur l'erreur SQL
+       DISPLAY-SQL-CODE.
+           MOVE SQLCODE TO DISP-SQLCODE
+           DISPLAY 'SQLCODE  : ' DISP-SQLCODE
+           DISPLAY 'SQLSTATE : ' SQLSTATE
+           DISPLAY 'SQLERRML : ' SQLERRML
+           DISPLAY 'SQLERRMC : ' SQLERRMC
+           .
+
+       END PROGRAM INDICAT.

@@ -1,0 +1,43 @@
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE AREA FOR NEW TABLES
+      ******************************************************************
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION INPUT
+      ******************************************************************
+       01 ENTREE-SO.
+          05 INSO-COMMAND             PIC X(8).
+          05 INSO-RECORD              PIC X(1110).
+      * PERSPECTIVE
+          05 INSO-RECORD-OBJ REDEFINES INSO-RECORD.
+               07 INSO-OBJ-ID         PIC 9(10).
+               07 INSO-OBJ-NAME       PIC X(150).
+               07 INSO-PERSP-ID       PIC 9(10).
+               07 FILLER              PIC X(940).
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION OUTPUT
+      ******************************************************************
+       01 SORTIE-SO.
+          05 OUTSO-MESSAGE            PIC X(40).
+          05 OUTSO-RECORD             PIC X(1110).
+      * PERSPECTIVE
+          05 OUTSO-RECORD-OBJ REDEFINES OUTSO-RECORD.
+               07 OUTSO-OBJ-ID        PIC 9(10).
+               07 OUTSO-OBJ-NAME      PIC X(150).
+               07 OUTSO-PERSP-ID      PIC 9(10).
+               07 FILLER              PIC X(940).
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION OUTPUT - SORTIE-SO-50
+      ******************************************************************
+       01 SORTIE-SO-50.
+          05 OUTSO-MESSAGE-50         PIC X(40).
+          05 OUTSO-NUM-RECORDS-50     PIC S9(3).
+          05 OUTSO-RECORD-50-O.
+                07 OUTSO-RECORD-50             OCCURS 50 TIMES
+                                           INDEXED BY OUTSO-IDX.
+      * OBJECTIF STRUCTURE
+                   09 OUTSO-OBJ-ID-REC      PIC 9(10).
+                   09 OUTSO-OBJ-NAME-REC    PIC X(150).
+                   09 OUTSO-PERSP-ID-REC    PIC 9(10).

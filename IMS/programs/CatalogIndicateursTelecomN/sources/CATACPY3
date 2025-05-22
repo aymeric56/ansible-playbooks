@@ -1,0 +1,130 @@
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE AREA FOR NEW TABLES
+      ******************************************************************
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION INPUT
+      ******************************************************************
+       01 INPUT-MSG-UNITAIRE.
+          05 IN-LL                  PIC S9(4) COMP-5.
+          05 IN-ZZ                  PIC S9(4) COMP-5.
+          05 IN-TRANCDE             PIC X(10).
+          05 IN-COMMAND             PIC X(8).
+          05 IN-RECORD              PIC X(1110).
+      * PERSPECTIVE
+          05 IN-RECORD-PERSP REDEFINES IN-RECORD.
+               07 IN-PERSP-ID         PIC 9(10).
+               07 IN-PERSP-NAME       PIC X(150).
+               07 IN-PERSP-DES        PIC X(150).
+               07 FILLER              PIC X(800).
+      * OBJECTIF
+          05 IN-RECORD-OBJ REDEFINES IN-RECORD.
+               07 IN-OBJ-ID           PIC 9(10).
+               07 IN-OBJ-NAME         PIC X(150).
+               07 IN-PERSP-ID         PIC 9(10).
+               07 FILLER              PIC X(940).
+      * LEVIER
+          05 IN-RECORD-LEV REDEFINES IN-RECORD.
+               07 IN-LEV-ID           PIC 9(10).
+               07 IN-OBJ-ID           PIC 9(10).
+               07 IN-LEV-NAME         PIC X(150).
+               07 FILLER              PIC X(940).
+      * INDICATEUR
+          05 IN-RECORD-IND REDEFINES IN-RECORD.
+               07 IN-PERSP-NAME       PIC X(150).
+               07 IN-PERSP-ID         PIC 9(10).
+               07 IN-OBJ-NAME         PIC X(150).
+               07 IN-OBJ-ID           PIC 9(10).
+               07 IN-LEV-NAME         PIC X(150).
+               07 IN-LEV-ID           PIC 9(10).
+               07 IN-IND-EXEMPLE      PIC X(150).
+               07 IN-IND-ID           PIC 9(10).
+               07 IN-IND-DEFINITION   PIC X(150).
+               07 IN-IND-NATURE       PIC X(20).
+               07 IN-IND-MESURABLE    PIC 9(4).
+               07 IN-IND-SCOPE        PIC X(20).
+               07 IN-IND-TYPE         PIC X(20).
+               07 IN-IND-SOURCE       PIC X(255).
+               07 FILLER              PIC X(1).
+
+      ******************************************************************
+      * DATA AREA FOR TRANSACTION OUTPUT
+      ******************************************************************
+       01 OUTPUT-MSG-UNITAIRE.
+          05 OUT-LL                 PIC S9(4) COMP-5.
+          05 OUT-ZZ                 PIC S9(4) COMP-5.
+          05 OUT-MESSAGE            PIC X(40).
+          05 OUT-RECORD             PIC X(1110).
+      * PERSPECTIVE
+          05 OUT-RECORD-PERSP REDEFINES OUT-RECORD.
+               07 OUT-PERSP-ID        PIC 9(10).
+               07 OUT-PERSP-NAME      PIC X(150).
+               07 OUT-PERSP-DES       PIC X(150).
+               07 FILLER              PIC X(800).
+      * OBJECTIF
+          05 OUT-RECORD-OBJ REDEFINES OUT-RECORD.
+               07 OUT-OBJ-ID          PIC 9(10).
+               07 OUT-OBJ-NAME        PIC X(150).
+               07 OUT-PERSP-ID        PIC 9(10).
+               07 FILLER              PIC X(940).
+      * LEVIER
+          05 OUT-RECORD-LEV REDEFINES OUT-RECORD.
+               07 OUT-LEV-ID          PIC 9(10).
+               07 OUT-OBJ-ID          PIC 9(10).
+               07 OUT-LEV-NAME        PIC X(150).
+               07 FILLER              PIC X(940).
+      * INDICATEUR
+          05 OUT-RECORD-IND REDEFINES OUT-RECORD.
+               07 OUT-PERSP-NAME      PIC X(150).
+               07 OUT-PERSP-ID        PIC 9(10).
+               07 OUT-OBJ-NAME        PIC X(150).
+               07 OUT-OBJ-ID          PIC 9(10).
+               07 OUT-LEV-NAME        PIC X(150).
+               07 OUT-LEV-ID          PIC 9(10).
+               07 OUT-IND-EXEMPLE     PIC X(150).
+               07 OUT-IND-ID          PIC 9(10).
+               07 OUT-IND-DEFINITION  PIC X(150).
+               07 OUT-IND-NATURE      PIC X(20).
+               07 OUT-IND-MESURABLE   PIC 9(4).
+               07 OUT-IND-SCOPE       PIC X(20).
+               07 OUT-IND-TYPE        PIC X(20).
+               07 OUT-IND-SOURCE      PIC X(255).
+               07 FILLER              PIC X(1).
+
+
+      ******************************************************************
+      * CATALOGUE ENTIER
+      ****************************************************************
+
+      * COPYBOOK POUR LA STRUCTURE ARBORESCENTE
+
+       01 CAT-OUTPUT-MSG.
+          05 OUT-LL-CAT                    PIC S9(4) COMP-5.
+          05 OUT-ZZ-CAT                    PIC S9(4) COMP-5.
+          05 OUT-MESSAGE-CAT               PIC X(40).
+          05 NB-PERSP                      PIC 9(4).
+          05 NB-OBJ-MAX                    PIC 9(4).
+          05 NB-LEV-MAX                    PIC 9(4).
+          05 NB-IND-MAX                    PIC 9(4).
+          05 PERSP-TAB OCCURS 0 TO 20 TIMES DEPENDING ON NB-PERSP.
+              07 PERSP-ID                 PIC 9(10).
+              07 PERSP-NAME               PIC X(150).
+              07 PERSP-DESC               PIC X(150).
+              07 NB-OBJ                   PIC 9(4).
+              07 OBJ OCCURS 0 TO 20 TIMES DEPENDING ON NB-OBJ-MAX.
+                 09 OBJ-ID                PIC 9(10).
+                 09 OBJ-NAME              PIC X(150).
+                 09 NB-LEV                PIC 9(4).
+                 09 LEV OCCURS 0 TO 20 TIMES DEPENDING ON NB-LEV-MAX.
+                    11 LEV-ID             PIC 9(10).
+                    11 LEV-NAME           PIC X(150).
+                    11 NB-IND             PIC 9(4).
+                    11 IND OCCURS 0 TO 20 TIMES DEPENDING ON NB-IND-MAX.
+                       13 IND-ID          PIC 9(10).
+                       13 IND-NAME        PIC X(150).
+                       13 IND-DEFINITION  PIC X(150).
+                       13 IND-NATURE      PIC X(20).
+                       13 IND-MESURABLE   PIC X(1).
+                       13 IND-PERIMETRE   PIC X(20).
+                       13 IND-TYPE        PIC X(20).
+                       13 IND-SOURCE      PIC X(150).

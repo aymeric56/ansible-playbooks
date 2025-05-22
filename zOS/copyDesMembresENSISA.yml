@@ -1,0 +1,30 @@
+- name: PDS en cours
+  ansible.builtin.debug:
+    msg: "PDS en cours {{ userEnsisa }}"
+
+# - name: Copy a local progam file to a PDS member
+#   loop:
+#     - { membre: 'DECLIEXX', fichier: 'DECLIEXX.cbl' }
+#     - { membre: 'TPERSPGM', fichier: 'TPERSPGM.cbl' }
+#     - { membre: 'YESASSUR', fichier: 'YESASSUR.cpy' }
+#     - { membre: 'YESPERS', fichier: 'YESPERS.cpy' }
+#   ibm.ibm_zos_core.zos_copy:
+#     src: ./zOS/ENSISA/sources/{{ item.fichier }}
+#     dest: ENSISA.EXAM.{{ userEnsisa }}.SOURCES({{ item.membre }})
+#     encoding:
+#       from: UTF-8
+#       to: IBM-1140
+#     force: true
+
+- name: Copy a local JCL file to a PDS member
+  loop:
+    # - { membre: 'CMPDECXX', fichier: 'CMPDECXX.jcl' }
+    - { membre: 'CMPTASXX', fichier: 'CMPTASXX.jcl' }
+    - { membre: 'DECLIEXX', fichier: 'DECLIEXX.jcl' }
+  ibm.ibm_zos_core.zos_copy:
+    src: ./zOS/ENSISA/JCL/{{ item.fichier }}
+    dest: ENSISA.EXAM.{{ userEnsisa }}.JCL({{ item.membre }})
+    encoding:
+      from: UTF-8
+      to: IBM-1140
+    force: true

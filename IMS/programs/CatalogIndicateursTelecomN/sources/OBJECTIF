@@ -1,0 +1,311 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. OBJECTIF.
+
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      * MESSAGE PROCESSING
+       77 VALID-INPUT               PIC 9         VALUE 0.
+       77 TERM-IO                   PIC 9         VALUE 0.
+       77 TERM-LOOP                 PIC 9         VALUE 0.
+       77 DISP-SQLCODE              PIC +ZZZZZZZZ9.
+
+      ******************************************************************
+      *VARIABLES AREAS
+      ******************************************************************
+       01 NUMTOSTRING.
+          05 NUMTOSTRINGX           PIC X(2).
+          05 NUMTOSTRING9 REDEFINES NUMTOSTRINGX
+                                    PIC 9(2).
+
+      ******************************************************************
+      *Host variables
+      ******************************************************************
+       01 W-HOSTVAR-IMSVIP.
+          05 W-OBJ-ID               PIC S9(10) COMP.
+          05 W-PERSP-ID             PIC S9(10) COMP.
+          05 W-OBJ-NAME             PIC X(150).
+
+
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+
+
+      * Pointer to API-INFO structure
+       01 WS-API-INFO        USAGE POINTER VALUE NULL.
+
+      * Data Area name to get
+       01 WS-DATA-AREA-NAME  PIC X(16).
+
+      * The address of a returned Data Area Element
+       01 WS-ELEMENT         USAGE POINTER VALUE NULL.
+
+      * Length of element for BAQGETN call.
+       01 WS-ELEMENT-LENGTH  PIC 9(9) COMP-5.
+
+      * Prepare to print messages to the log
+       01 WS-FAIL-TYPE       PIC X(18) VALUE SPACES.
+       01 WS-CC9             PIC 9(5).
+       01 WS-RC9             PIC 9(5).
+       01 WS-ST9             PIC 9(5).
+
+      * Display this message to CICS log
+       01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
+
+      *    POUR DISPLAY SQLCODE
+       01  W-SQLCODE PIC S999.
+       01  SQLCODE-POUR-DISPLAY PIC ----.
+
+
+       LINKAGE SECTION.
+
+       COPY OBJCPY.
+
+
+      *----------------------------------------------------------------*
+      * PROCEDURE DIVISION FOR PERSPECTIVE CRUD OPERATIONS
+      *----------------------------------------------------------------*
+       PROCEDURE DIVISION USING ENTREE-SO SORTIE-SO SORTIE-SO-50.
+
+       BEGIN.
+
+               INITIALIZE SORTIE-SO
+               MOVE SPACES TO SORTIE-SO
+               INITIALIZE SORTIE-SO-50
+               MOVE SPACES TO OUTSO-MESSAGE-50
+               MOVE 0 TO OUTSO-NUM-RECORDS-50
+
+               DISPLAY "Dans OBJ !"
+               DISPLAY "INSO-COMMAND: " INSO-COMMAND
+
+               EVALUATE INSO-COMMAND
+                       WHEN 'OADD    '
+                            PERFORM ADD-OBJ
+                       WHEN 'ODISPLAY'
+                            PERFORM DISPLAY-OBJ
+                       WHEN 'OSHOW50'
+                            PERFORM SHOW50-OBJECTIFS
+                       WHEN 'OUPDATE '
+                            PERFORM UPDATE-OBJ
+                       WHEN 'ODELETE '
+                            PERFORM DELETE-OBJ
+                       WHEN OTHER
+                            DISPLAY 'INVALID COMMAND RECEIVED:'
+                                      INSO-COMMAND
+               END-EVALUATE
+
+           GOBACK
+           .
+
+      *----------------------------------------------------------------*
+      * ADD-OBJ PROCEDURE
+      *----------------------------------------------------------------*
+       ADD-OBJ.
+
+           DISPLAY "INSO-OBJ-NAME : " INSO-OBJ-NAME
+           DISPLAY "INSO-PERSP-ID : " INSO-PERSP-ID
+
+           MOVE INSO-OBJ-NAME TO W-OBJ-NAME
+           MOVE INSO-PERSP-ID TO W-PERSP-ID
+
+           EXEC SQL INSERT INTO OBJECTIF (
+                      nom_objectif,
+                      id_perspective
+
+                          )
+                VALUES (
+                      :W-OBJ-NAME,
+                      :W-PERSP-ID
+                      )
+           END-EXEC
+
+
+
+           DISPLAY "SQL code : " SQLCODE
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'ADDED' TO OUTSO-MESSAGE
+                MOVE INSO-RECORD-OBJ TO OUTSO-RECORD-OBJ
+           WHEN +100
+                MOVE 'ADD FAILED +' TO OUTSO-MESSAGE
+                PERFORM DISPLAY-SQL-CODE
+           WHEN OTHER
+                MOVE 'ADD FAILED =' TO OUTSO-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+                PERFORM DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DISPLAY OBJECTIF PROCEDURE
+      *----------------------------------------------------------------*
+       DISPLAY-OBJ.
+           DISPLAY 'Je passe dans DISPLAY-OBJ   '
+           MOVE INSO-OBJ-ID TO W-OBJ-ID
+           EXEC SQL SELECT id_objectif,
+                           id_perspective,
+                           nom_objectif
+
+                INTO :W-OBJ-ID,
+                     :W-PERSP-ID,
+                     :W-OBJ-NAME
+                FROM OBJECTIF
+                WHERE id_objectif = :W-OBJ-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DISPLAYED' TO OUTSO-MESSAGE
+                MOVE W-OBJ-ID TO OUTSO-OBJ-ID
+                MOVE W-PERSP-ID TO OUTSO-PERSP-ID
+                MOVE W-OBJ-NAME TO OUTSO-OBJ-NAME
+
+           WHEN +100
+                MOVE 'DISPLAY FAILED' TO OUTSO-MESSAGE
+           WHEN OTHER
+                MOVE 'DISPLAY FAILED' TO OUTSO-MESSAGE
+                Perform DISPLAY-SQL-CODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * SHOW 50 OBJECTIF PROCEDURE
+      *----------------------------------------------------------------*
+       SHOW50-OBJECTIFS.
+           DISPLAY 'D‚but de SHOW50 OBJECTIFS'
+           MOVE 0 TO TERM-LOOP
+           MOVE 0 TO OUTSO-NUM-RECORDS-50
+           MOVE 0 TO NUMTOSTRING9
+
+           MOVE INSO-OBJ-ID TO W-OBJ-ID
+
+           SET OUTSO-IDX TO 1
+           EXEC SQL DECLARE SHOW50-CURS CURSOR FOR
+                SELECT id_objectif,
+                       id_perspective,
+                       nom_objectif
+                FROM OBJECTIF
+                WHERE id_objectif >= :W-OBJ-ID
+                ORDER BY id_objectif
+           END-EXEC
+
+           EXEC SQL
+                OPEN SHOW50-CURS
+                END-EXEC
+
+      * R‚cup‚ration des r‚sultats
+           PERFORM UNTIL(SQLCODE NOT = 0)
+              OR (OUTSO-NUM-RECORDS-50 >= 50)
+                   EXEC SQL
+                        FETCH SHOW50-CURS
+                        INTO :W-OBJ-ID,
+                             :W-PERSP-ID,
+                             :W-OBJ-NAME
+                        END-EXEC
+                   IF SQLCODE = 0
+                      SET NUMTOSTRING9 TO OUTSO-IDX
+                      MOVE W-OBJ-ID TO OUTSO-OBJ-ID-REC(OUTSO-IDX)
+                      MOVE W-PERSP-ID TO OUTSO-PERSP-ID-REC(OUTSO-IDX)
+                      MOVE W-OBJ-NAME TO OUTSO-OBJ-NAME-REC(OUTSO-IDX)
+                      SET OUTSO-IDX UP BY 1
+                   END-IF
+           END-PERFORM
+
+      * Gestion des fins de liste ou erreurs SQL
+           EVALUATE SQLCODE
+           WHEN 0
+                SET OUTSO-IDX DOWN BY 1
+                SET OUTSO-NUM-RECORDS-50 TO OUTSO-IDX
+                IF OUTSO-NUM-RECORDS-50 >= 50
+                   MOVE 'R‚sultats tronqu‚s … 50' TO OUTSO-MESSAGE-50
+                ELSE
+                   MOVE 'Fin de la liste' TO OUTSO-MESSAGE-50
+                END-IF
+
+           WHEN +100
+                SET OUTSO-IDX DOWN BY 1
+                IF OUTSO-IDX >= 1
+                   SET NUMTOSTRING9 TO OUTSO-IDX
+                   MOVE NUMTOSTRING9 TO OUTSO-NUM-RECORDS-50
+                END-IF
+                STRING NUMTOSTRING9 DELIMITED BY SPACE
+                       ' objectifs trouv‚s' DELIMITED BY SIZE
+                   INTO OUTSO-MESSAGE-50
+
+           WHEN OTHER
+                MOVE 'Erreur SQL' TO OUTSO-MESSAGE-50
+
+           END-EVALUATE
+
+           EXEC SQL
+                CLOSE SHOW50-CURS
+           END-EXEC
+           .
+
+      *----------------------------------------------------------------*
+      * UPDATE-OBJECTIF PROCEDURE
+      *----------------------------------------------------------------*
+       UPDATE-OBJ.
+           MOVE INSO-OBJ-ID   TO W-OBJ-ID
+           MOVE INSO-OBJ-NAME TO W-OBJ-NAME
+           MOVE INSO-PERSP-ID TO W-PERSP-ID
+
+           DISPLAY 'INSO-OBJ-ID: ' INSO-OBJ-ID
+           DISPLAY 'INSO-OBJ-NAME: ' INSO-OBJ-NAME
+           DISPLAY 'INSO-PERSP-ID: ' INSO-PERSP-ID
+
+           EXEC SQL UPDATE OBJECTIF
+                SET nom_objectif = :W-OBJ-NAME,
+                   id_perspective = :W-PERSP-ID
+                WHERE id_objectif = :W-OBJ-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'UPDATED' TO OUTSO-MESSAGE
+                MOVE INSO-RECORD-OBJ TO OUTSO-RECORD-OBJ
+           WHEN +100
+                MOVE 'UPDATE FAILED' TO OUTSO-MESSAGE
+           WHEN OTHER
+                MOVE 'UPDATE FAILED' TO OUTSO-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           END-EVALUATE
+           .
+
+      *----------------------------------------------------------------*
+      * DELETE-OBJECTIF PROCEDURE
+      *----------------------------------------------------------------*
+       DELETE-OBJ.
+           MOVE INSO-OBJ-ID TO W-OBJ-ID
+           DISPLAY 'INSO-OBJ-ID: ' INSO-OBJ-ID
+           EXEC SQL DELETE FROM OBJECTIF
+                WHERE id_objectif = :W-OBJ-ID
+           END-EXEC
+
+           EVALUATE SQLCODE
+           WHEN 0
+                MOVE 'DELETED' TO OUTSO-MESSAGE
+           WHEN +100
+                MOVE 'DELETE FAILED' TO OUTSO-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           WHEN OTHER
+                MOVE 'DELETE FAILED' TO OUTSO-MESSAGE
+                DISPLAY 'ERROR: BAD SQLCODE: ' SQLCODE
+           END-EVALUATE
+           EXEC SQL COMMIT END-EXEC.
+           .
+
+      * Permet de r‚cup‚rer plus d'informations sur l'erreur SQL
+       DISPLAY-SQL-CODE.
+           MOVE SQLCODE TO DISP-SQLCODE
+           DISPLAY 'SQLCODE  : ' DISP-SQLCODE
+           DISPLAY 'SQLSTATE : ' SQLSTATE
+           DISPLAY 'SQLERRML : ' SQLERRML
+           DISPLAY 'SQLERRMC : ' SQLERRMC
+           .
+
+       END PROGRAM OBJECTIF.

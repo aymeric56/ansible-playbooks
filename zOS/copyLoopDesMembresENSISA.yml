@@ -1,5 +1,5 @@
 ---
-- name: List User
+- name: Copy des membres dans les PDS
   hosts: zAc
   gather_facts: false
   environment: "{{ environment_vars }}"
@@ -13,34 +13,34 @@
           # - PICARD
           # - PAUCOT
           # - ENSIS00
-          - ENSIS01
-          - ENSIS02
-          - ENSIS03
-          - ENSIS04
-          - ENSIS05
-          - ENSIS06
-          - ENSIS07
-          - ENSIS08
-          - ENSIS09
-          - ENSIS10
-          - ENSIS11
-          - ENSIS12
-          - ENSIS13
-          - ENSIS14
-          - ENSIS15
-          - ENSIS16
-          - ENSIS17
-          - ENSIS18
-          - ENSIS19
-          - ENSIS20
-          - ENSIS21
-          - ENSIS22
-          - ENSIS23
-          - ENSIS24
-          - ENSIS25
-          - ENSIS26
-          - ENSIS27
-          - ENSIS28
+          # - ENSIS01
+          # - ENSIS02
+          # - ENSIS03
+          # - ENSIS04
+          # - ENSIS05
+          # - ENSIS06
+          # - ENSIS07
+          # - ENSIS08
+          # - ENSIS09
+          # - ENSIS10
+          # - ENSIS11
+          # - ENSIS12
+          # - ENSIS13
+          # - ENSIS14
+          # - ENSIS15
+          # - ENSIS16
+          # - ENSIS17
+          # - ENSIS18
+          # - ENSIS19
+          # - ENSIS20
+          # - ENSIS21
+          # - ENSIS22
+          # - ENSIS23
+          # - ENSIS24
+          # - ENSIS25
+          # - ENSIS26
+          # - ENSIS27
+          # - ENSIS28
           - ENSIS29
           - ENSIS30
           - ENSIS31
@@ -75,7 +75,7 @@
           # - ECTELECO
 
     - name: Commande TSO
-      ansible.builtin.include_tasks: tso_command.yml
+      ansible.builtin.include_tasks: copyDesMembresENSISA.yml
       loop: "{{ users }}"
       loop_control:
-        loop_var: usertso
+        loop_var: userEnsisa

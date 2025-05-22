@@ -1,0 +1,63 @@
+---
+- name: Copy des membres dans les PDS
+  hosts: zAc
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+# 2 profils pour protéger les fichiers ENSISA.**
+# 1. ENSISA.** qui est normalement en ALTER pour ECENSISA
+# 2. ENSISA.EXAM.ENSISxx.** qui est en ALTER lui aussi mais que pour le user concerné ENSISxx
+# pour supprimer les modifications aux datasets il faut mettre les 2 profils en READ.
+
+  tasks:
+    - name: Modifie les droits RACF
+      loop:
+        - ENSIS00
+        - ENSIS01
+        - ENSIS02
+        - ENSIS03
+        - ENSIS04
+        - ENSIS05
+        - ENSIS06
+        - ENSIS07
+        - ENSIS08
+        - ENSIS09
+        - ENSIS10
+        - ENSIS11
+        - ENSIS12
+        - ENSIS13
+        - ENSIS14
+        - ENSIS15
+        - ENSIS16
+        - ENSIS17
+        - ENSIS18
+        - ENSIS19
+        - ENSIS20
+        - ENSIS21
+        - ENSIS22
+        - ENSIS23
+        - ENSIS24
+        - ENSIS25
+        - ENSIS26
+        - ENSIS27
+        - ENSIS28
+        - ENSIS29
+        - ENSIS30
+        - ENSIS31
+        - ENSIS32
+        - ENSIS33
+        - ENSIS34
+        - ENSIS35
+        - ENSIS36
+        - ENSIS37
+        - ENSIS38
+        - ENSIS39
+      ibm.ibm_zos_core.zos_tso_command:
+        commands:
+          - PERMIT 'ENSISA.EXAM.{{ item }}.**' ID({{ item }}) ACCESS(ALTER) CLASS(DATASET) GEN
+
+    - name: Rafrechissement des droits RACF
+      ibm.ibm_zos_core.zos_tso_command:
+        commands:
+          - PERMIT 'ENSISA.**' ID(ECENSISA) ACCESS(ALTER) CLASS(DATASET) GEN
+          - SETROPTS GENERIC(DATASET) REFRESH

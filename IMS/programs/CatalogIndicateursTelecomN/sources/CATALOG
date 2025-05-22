@@ -1,0 +1,330 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CATALOG.
+
+      ******************************************************************
+
+       ENVIRONMENT DIVISION.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      * MESSAGE PROCESSING
+       77 VALID-INPUT               PIC 9         VALUE 0.
+       77 TERM-IO                   PIC 9         VALUE 0.
+       77 TERM-LOOP                 PIC 9         VALUE 0.
+
+      * LIST Sous Programmes
+       77 C-PERSP                   PIC X(8) VALUE 'PERSP'.
+       77 C-LEVIER                  PIC X(8) VALUE 'LEVIER'.
+       77 C-OBJECTIF                PIC X(8) VALUE 'OBJECTIF'.
+       77 C-INDICAT                 PIC X(8) VALUE 'INDICAT'.
+
+      ******************************************************************
+      *DATABASE CALL CODES
+      ******************************************************************
+
+       77 GU                        PIC  X(04)    VALUE "GU  ".
+       77 GHU                       PIC  X(04)    VALUE "GHU ".
+       77 GN                        PIC  X(04)    VALUE "GN  ".
+       77 GHN                       PIC  X(04)    VALUE "GHN ".
+       77 ISRT                      PIC  X(04)    VALUE "ISRT".
+       77 DLET                      PIC  X(04)    VALUE "DLET".
+       77 REPL                      PIC  X(04)    VALUE "REPL".
+       77 NEXT-CALL                 PIC  X(04)    VALUE "    ".
+
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE AREA
+      ******************************************************************
+
+       COPY CATACPY2.
+
+      ******************************************************************
+      *INPUT/OUTPUT MESSAGE with sub programs
+      ******************************************************************
+
+       COPY PERSPCPY.
+       COPY OBJCPY.
+       COPY LEVCPY.
+       COPY INDCPY.
+
+      *     EXEC SQL INCLUDE SQLCA END-EXEC.
+
+      * Pointer to API-INFO structure
+       01 WS-API-INFO        USAGE POINTER VALUE NULL.
+
+      * Data Area name to get
+       01 WS-DATA-AREA-NAME  PIC X(16).
+
+      * The address of a returned Data Area Element
+       01 WS-ELEMENT         USAGE POINTER VALUE NULL.
+
+      * Length of element for BAQGETN call.
+       01 WS-ELEMENT-LENGTH  PIC 9(9) COMP-5.
+
+      * Prepare to print messages to the log
+       01 WS-FAIL-TYPE       PIC X(18) VALUE SPACES.
+       01 WS-CC9             PIC 9(5).
+       01 WS-RC9             PIC 9(5).
+       01 WS-ST9             PIC 9(5).
+
+      * Display this message to CICS log
+       01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
+
+       LINKAGE SECTION.
+
+       01 IOPCBA POINTER.
+       01 ALTPCBA POINTER.
+
+      ******************************************************************
+      *I/O PCB
+      ******************************************************************
+
+       01 LTERMPCB.
+          05 LOGTTERM               PIC  X(08).
+          05 FILLER                 PIC  X(02).
+          05 TPSTAT                 PIC  X(02).
+             88 TPSTAT-OK                         VALUE SPACE.
+             88 TPSTAT-NOMORE                     VALUE 'QC'.
+             88 TPSTAT-EXIST                      VALUE 'CF'.
+          05 IODATE                 PIC  X(04).
+          05 IOTIME                 PIC  X(04).
+          05 FILLER                 PIC  X(02).
+          05 SEQNUM                 PIC  X(02).
+          05 MOD                    PIC  X(08).
+
+      ******************************************************************
+      *ALTPCB
+      ******************************************************************
+
+       01 ALTPCB.
+          05 LOGTTERM1              PIC  X(08).
+          05 FILLER1                PIC  X(02).
+          05 TPSTAT1                PIC  X(02).
+          05 IODATE1                PIC  X(04).
+          05 IOTIME1                PIC  X(04).
+          05 FILLER1                PIC  X(02).
+          05 SEQNUM1                PIC  X(02).
+          05 MOD1                   PIC  X(08).
+
+      *----------------------------------------------------------------*
+      * PROCEDURE DIVISION FOR PERSPECTIVE CRUD OPERATIONS
+      *----------------------------------------------------------------*
+       PROCEDURE DIVISION.
+           ENTRY "DLITCBL"
+           USING IOPCBA
+                 ALTPCBA
+           .
+
+       BEGIN.
+           SET ADDRESS OF LTERMPCB TO ADDRESS OF IOPCBA
+           MOVE 0 TO TERM-IO
+
+           PERFORM WITH TEST BEFORE UNTIL TERM-IO = 1
+               INITIALIZE INPUT-MSG-UNITAIRE
+               INITIALIZE OUTPUT-MSG-UNITAIRE
+               INITIALIZE OUTPUT-MSG-50
+               MOVE SPACES TO INPUT-MSG-UNITAIRE
+               MOVE SPACES TO OUTPUT-MSG-UNITAIRE
+               MOVE SPACES TO OUTPUT-MSG-50
+
+
+               DISPLAY "Dans CATLOG 9 fev  …  17!"
+
+               CALL 'CBLTDLI' USING GU
+                                    LTERMPCB
+                                    INPUT-MSG-UNITAIRE
+
+               DISPLAY 'In Command : ' IN-COMMAND
+
+               EVALUATE TRUE
+               WHEN TPSTAT-OK
+               WHEN TPSTAT-EXIST
+      *              PERFORM VALIDATE-INPUT
+                    IF VALID-INPUT = 0
+                       EVALUATE IN-COMMAND(1:1)
+                       WHEN 'P'
+                            PERFORM SUB-PERSPECTIVE
+                       WHEN 'O'
+                            PERFORM SUB-OBJECTIF
+                       WHEN 'L'
+                            PERFORM SUB-LEVIER
+                       WHEN 'I'
+                            PERFORM SUB-INDICATEUR
+                       WHEN OTHER
+                            DISPLAY 'INVALID COMMAND RECEIVED:'
+                                            IN-COMMAND
+                       END-EVALUATE
+                    ELSE
+                        DISPLAY 'INVALID INPUT. SKIPPING OPERATION.'
+                    END-IF
+               WHEN TPSTAT-NOMORE
+                    MOVE 1 TO TERM-IO
+               WHEN OTHER
+                    DISPLAY 'ERROR: ' TPSTAT
+               END-EVALUATE
+
+           END-PERFORM
+           STOP RUN
+           .
+
+      *----------------------------------------------------------------*
+      * SOUS PROGRAMME PERSPECTIVE
+      *----------------------------------------------------------------*
+       SUB-PERSPECTIVE.
+           DISPLAY "Dans Sub Perspective"
+           DISPLAY 'Input Message : ' IN-PERSP-ID of IN-RECORD-PERSP
+           MOVE IN-COMMAND      to INSP-COMMAND
+           MOVE IN-RECORD-PERSP to INSP-RECORD-PERSP
+
+           CALL C-PERSP USING ENTREE-SP SORTIE-SP SORTIE-SP-50
+           END-CALL
+
+           DISPLAY 'Fin du CALL DISPLAY-PERSPECTIVE   '
+
+           IF OUTSP-NUM-RECORDS-50 > 0
+               DISPLAY "Sortie multiple d‚tect‚e "
+
+               MOVE OUTSP-MESSAGE-50     TO OUT-MESSAGE-50
+               MOVE OUTSP-NUM-RECORDS-50 TO OUT-NUM-RECORDS
+               display 'Catalog OUT-NUM-RECORDS : ' OUT-NUM-RECORDS
+      *         SET ADDRESS OF OUT-RECORD-PERSP-OUT-50 to
+      *                    ADDRESS OF OUTSP-RECORD-50-P
+               MOVE OUTSP-RECORD-50-P TO OUT-RECORD-PERSP-OUT-50
+               display 'Element 1: ' OUT-PERSP-DES-REC(1)
+
+               PERFORM INSERT-IO-50
+           ELSE
+               DISPLAY "Sortie unitaire d‚tect‚e"
+
+               MOVE OUTSP-MESSAGE TO OUT-MESSAGE
+               DISPLAY OUTSP-MESSAGE
+               MOVE OUTSP-RECORD-PERSP TO OUT-RECORD
+
+               PERFORM INSERT-IO
+           END-IF
+           .
+
+      *----------------------------------------------------------------*
+      * SOUS PROGRAMME OBJECTIF
+      *----------------------------------------------------------------*
+       SUB-OBJECTIF.
+           DISPLAY "Dans Sub Objectif"
+           DISPLAY 'Input ID : ' IN-OBJ-ID of IN-RECORD-OBJ
+           DISPLAY 'Input Name : ' IN-OBJ-NAME of IN-RECORD-OBJ
+           DISPLAY 'Input perspID : ' IN-PERSP-ID of IN-RECORD-OBJ
+           MOVE IN-COMMAND      to INSO-COMMAND
+           MOVE IN-RECORD-OBJ   to INSO-RECORD-OBJ
+
+           CALL C-OBJECTIF USING ENTREE-SO SORTIE-SO SORTIE-SO-50
+           END-CALL
+
+           IF OUTSO-NUM-RECORDS-50 > 0
+               DISPLAY "Sortie multiple d‚tect‚e "
+
+               MOVE OUTSO-MESSAGE-50     TO OUT-MESSAGE-50
+               MOVE OUTSO-NUM-RECORDS-50 TO OUT-NUM-RECORDS
+               MOVE OUTSO-RECORD-50-O    TO OUT-RECORD-OBJ-OUT-50
+
+               PERFORM INSERT-IO-50
+           ELSE
+               DISPLAY "Sortie unitaire d‚tect‚e"
+
+               MOVE OUTSO-MESSAGE TO OUT-MESSAGE
+               MOVE OUTSO-RECORD-OBJ TO OUT-RECORD
+
+               PERFORM INSERT-IO
+           END-IF
+           .
+
+      *----------------------------------------------------------------*
+      * SOUS PROGRAMME LEVIER
+      *----------------------------------------------------------------*
+       SUB-LEVIER.
+           DISPLAY "Dans Sub Levier"
+           DISPLAY 'Input ID : ' IN-LEV-ID of IN-RECORD-LEV
+           MOVE IN-COMMAND      to INSL-COMMAND
+           MOVE IN-RECORD-LEV   to INSL-RECORD-LEV
+
+           CALL C-LEVIER USING ENTREE-SL SORTIE-SL SORTIE-SL-50
+           END-CALL
+
+
+           IF OUTSL-NUM-RECORDS-50 > 0
+               DISPLAY "Sortie multiple d‚tect‚e "
+
+               MOVE OUTSL-MESSAGE-50     TO OUT-MESSAGE-50
+               MOVE OUTSL-NUM-RECORDS-50 TO OUT-NUM-RECORDS
+               MOVE OUTSL-RECORD-50-L    TO OUT-RECORD-LEV-OUT-50
+
+               PERFORM INSERT-IO-50
+           ELSE
+               DISPLAY "Sortie unitaire d‚tect‚e"
+
+               MOVE OUTSL-MESSAGE TO OUT-MESSAGE
+               MOVE OUTSL-RECORD-LEV TO OUT-RECORD
+
+               PERFORM INSERT-IO
+           END-IF
+           .
+
+      *----------------------------------------------------------------*
+      * SOUS PROGRAMME INDICATEUR
+      *----------------------------------------------------------------*
+       SUB-INDICATEUR.
+           DISPLAY "Dans Sub Indicateur"
+           DISPLAY 'Input Message : ' IN-IND-ID of IN-RECORD-IND
+           MOVE IN-COMMAND      to INSI-COMMAND
+           MOVE IN-RECORD-IND   to INSI-RECORD-IND
+
+           CALL C-INDICAT USING ENTREE-SI SORTIE-SI SORTIE-SI-50
+           END-CALL
+
+           IF OUTSI-NUM-RECORDS-50 > 0
+               DISPLAY "Sortie multiple d‚tect‚e "
+
+               MOVE OUTSI-MESSAGE-50     TO OUT-MESSAGE-50
+               MOVE OUTSI-NUM-RECORDS-50 TO OUT-NUM-RECORDS
+               MOVE OUTSI-RECORD-50-I TO OUT-RECORD-IND-OUT-50
+
+               PERFORM INSERT-IO-50
+           ELSE
+               DISPLAY "Sortie unitaire d‚tect‚e"
+
+               MOVE OUTSI-MESSAGE TO OUT-MESSAGE
+               MOVE OUTSI-RECORD-IND TO OUT-RECORD
+
+               PERFORM INSERT-IO
+           END-IF
+           .
+
+      *----------------------------------------------------------------*
+      * PROCEDURE INSERT-IO : INSERT FOR IOPCB REQUEST HANDLER
+      *----------------------------------------------------------------*
+       INSERT-IO.
+           COMPUTE OUT-LL of OUTPUT-MSG-UNITAIRE
+                               = LENGTH OF OUTPUT-MSG-UNITAIRE
+           MOVE 0 TO OUT-ZZ of OUTPUT-MSG-UNITAIRE
+           CALL 'CBLTDLI' USING ISRT
+                                LTERMPCB
+                                OUTPUT-MSG-UNITAIRE
+
+           IF TPSTAT NOT = SPACES
+              DISPLAY 'INSERT TO IOPCB FAILED WITH STATUS CODE: '
+                      TPSTAT
+           END-IF
+           .
+
+       INSERT-IO-50.
+           COMPUTE OUT-LL-50 = LENGTH OF OUTPUT-MSG-50
+           MOVE 0 TO OUT-ZZ-50
+           CALL 'CBLTDLI' USING ISRT
+                                LTERMPCB
+                                OUTPUT-MSG-50
+
+           IF TPSTAT NOT = SPACES
+              DISPLAY 'INSERT TO IOPCB FAILED WITH STATUS CODE: '
+                      TPSTAT
+           END-IF
+           .
+
+       END PROGRAM CATALOG.
