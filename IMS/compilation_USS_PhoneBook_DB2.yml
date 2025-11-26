@@ -67,7 +67,7 @@
       ibm.ibm_zos_core.zos_job_submit:
         src: "{{ temp_file_path.path }}/COIMSDB2.j2"
         location: local
-        wait_time_s: 20
+        wait_time_s: 15
         max_rc: 4
         encoding:
           from: ISO8859-1
