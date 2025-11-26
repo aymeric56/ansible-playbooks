@@ -28,14 +28,14 @@
     - name: Compress Directory contents
       ansible.builtin.archive:
         path: 
-        - "{{playbook_dir}}/IMS/programs/PhoneBook_Db2/*"
-        dest: "{{playbook_dir}}/IMS/programs/PhoneBook.zip"
+        - "{{playbook_dir}}/programs/PhoneBook_Db2/*"
+        dest: "{{playbook_dir}}/programs/PhoneBook.zip"
         format: zip
       delegate_to: 127.0.0.1
 
     - name: Copy an extract the zip file to z/OS
       ibm.ibm_zos_core.zos_unarchive:
-        src: ./IMS/programs/PhoneBook.zip
+        src: "{{playbook_dir}}/programs/PhoneBook.zip"
         dest: "/u/aymeric/SRC_IMS"
         format: 
           name: zip
