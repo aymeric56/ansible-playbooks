@@ -28,8 +28,8 @@
     - name: Compress Directory contents
       ansible.builtin.archive:
         path: 
-        - ./IMS/programs/PhoneBook_Db2/*
-        dest: ./IMS/programs/PhoneBook.zip  
+        - "{{playbook_dir}}/IMS/programs/PhoneBook_Db2/*"
+        dest: "{{playbook_dir}}/IMS/programs/PhoneBook.zip"
         format: zip
       delegate_to: 127.0.0.1
 
