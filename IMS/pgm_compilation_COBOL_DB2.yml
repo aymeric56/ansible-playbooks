@@ -2,7 +2,7 @@
 - name: Playbook de compilation IMS
   hosts: zt01
   gather_facts: false
-  environment: "{{ environment_vars }}"
+  #environment: "{{ environment_vars }}"
   vars:
     pgmtocompile: IVTNDB2
     db2prefix: DB2.V12                      # cas mainplex

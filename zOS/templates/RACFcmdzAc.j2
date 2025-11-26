@@ -15,7 +15,12 @@ SETROPTS GENERIC(DATASET) REFRESH
 //* ---------------------------------------------
 //* everything else is comment
 //* ---------------------------------------------
-    	PERMIT 'ENSISA.**' ID(ECENSISA) ACCESS(READ) CLASS(DATASET) GEN
-        SETROPTS GENERIC(DATASET) REFRESH
+    PERMIT 'ENSISA.**' ID(ECENSISA) ACCESS(READ) CLASS(DATASET) GEN
+    SETROPTS GENERIC(DATASET) REFRESH
+
+    LD DA('ENSISA.**') all
+
+    LISTDSD  DATASET('ENSISA.**') ALL GENERIC
+    LISTDSD  DATASET('ENSISA.EXAM.ENSIS00.**') ALL GENERIC
 //*
 //
