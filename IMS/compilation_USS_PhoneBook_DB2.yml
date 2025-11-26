@@ -6,11 +6,10 @@
   vars:
     pgmtocompile: IVTNDB2
     db2prefix: DB2.V12                      # cas mainplex
-    # db2prefix: DBC0CFG.DB2.V12              # cas guest zAcademy
+    # db2prefix: DBC0CFG.DB2.V12            # cas guest zAcademy
 
   tasks:
     
-    # We ask IMS to free the program
     - name: We force MPR to free program ({{ pgmtocompile }})
       ibm.ibm_zos_ims.ims_command:
         command: UPDATE PGM START(REFRESH) NAME({{ pgmtocompile }}) OPTION(ALLRSP)
@@ -29,8 +28,8 @@
     - name: Compress Directory contents
       ansible.builtin.archive:
         path: 
-        - /Users/Aymeric/Documents/Git/ansible-playbooks/IMS/programs/PhoneBook_Db2/*
-        dest: /Users/Aymeric/Documents/Git/ansible-playbooks/IMS/programs/PhoneBook.zip  
+        - ./IMS/programs/PhoneBook_Db2/*
+        dest: ./IMS/programs/PhoneBook.zip  
         format: zip
       delegate_to: 127.0.0.1
 
@@ -80,14 +79,5 @@
       ansible.builtin.debug:
         msg: "{{ respcompil.jobs[0].ddnames[0].content }}"
 
-    # - name: Job output
-    #   ibm.ibm_zos_core.zos_job_output:
-    #     job_id: "{{ respcompil.jobs[0].job_id }}"
-    #     ddname: "JESMSGLG"
-    #   register: outputjob
-
-    # - name: Output Soumission Compil
-    #   ansible.builtin.debug:
-    #     msg: "{{ outputjob.jobs[0].ddnames[0].content }}"
 
 
