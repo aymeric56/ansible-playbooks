@@ -1,0 +1,73 @@
+openapi: 3.0.1
+info:
+  title: call simple
+  version: 1.0.0
+tags:
+  - name: callSimple
+paths:
+  /callSimple:
+    get:
+      tags:
+      - getCallSimple
+      summary: Exemple de call simple
+      operationId: getCallSimple.read
+      parameters:
+      - name: codeReponse
+        in: query
+        required: true
+        schema:
+          maxLength: 3
+          type: string
+      - name: lastName
+        in: query
+        required: true
+        schema:
+          maxLength: 10
+          type: string
+      responses:
+        200:
+          description: 200 tout va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callSimpleResponse'
+        404:
+          description: 404 pas trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callSimpleResponse'
+        500:
+          description: 500 pas bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callSimpleResponse'
+      deprecated: false
+      x-codegen-request-body-name: data
+components:
+  schemas:
+    archivedContactsRequest:
+      type: object
+      properties:
+        lastName:
+          type: string
+        firstName:
+          type: string
+        telExtension:
+          type: string
+        zipCode:
+          type: string
+    callSimpleResponse:
+      type: object
+      properties:
+        lastName:
+          type: string
+        firstName:
+          type: string
+        telExtension:
+          type: string
+        zipCode:
+          type: string
+        id:
+          type: string

@@ -1,0 +1,7 @@
+provider: CICS
+programInterface: CHANNEL 
+language: COBOL 
+connectionRef: CICSconn
+program: DFHOXCMN
+ccsid: 037
+projectType: provider

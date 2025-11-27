@@ -1,0 +1,28 @@
+---
+version: 1.2
+mappings:
+- body:
+    required: false
+    nullable: false
+    existsIfEmpty: "$exists($zosAssetResponse.channel.responseCode500)"
+    mappings:
+    - lastName:
+        template: "{{$zosAssetResponse.channel.responseCode500.'lastName'}}"
+        required: false
+        nullable: false
+    - firstName:
+        template: "{{$zosAssetResponse.channel.responseCode500.'firstName'}}"
+        required: false
+        nullable: false
+    - telExtension:
+        template: "{{$zosAssetResponse.channel.responseCode500.'telExtension'}}"
+        required: false
+        nullable: false
+    - zipCode:
+        template: "{{$zosAssetResponse.channel.responseCode500.'zipCode'}}"
+        required: false
+        nullable: false
+    - id:
+        template: "{{$zosAssetResponse.channel.responseCode500.'id'}}"
+        required: false
+        nullable: false

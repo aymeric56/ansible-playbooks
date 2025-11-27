@@ -1,0 +1,44 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "channel" : {
+      "type" : "object",
+      "properties" : {
+        "DFHWS-URI" : {
+          "type" : "string"
+        },
+        "DFHWS-URI-QUERY" : {
+          "type" : "string"
+        },
+        "DFHHTTPMETHOD" : {
+          "type" : "string"
+        },
+        "data" : {
+          "description" : "json-schema",
+          "type" : "object",
+          "properties" : {
+            "requestQueryParameters" : {
+              "type" : "object",
+              "required" : [ "codeReponse", "lastName" ],
+              "properties" : {
+                "codeReponse" : {
+                  "maxLength" : 3,
+                  "type" : "string"
+                },
+                "lastName" : {
+                  "maxLength" : 10,
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "required" : [ "requestQueryParameters" ]
+        }
+      },
+      "description" : "Request channel"
+    }
+  },
+  "required" : [ "channel" ],
+  "description" : "General wrapper for CICS channel z/OS Asset requests"
+}

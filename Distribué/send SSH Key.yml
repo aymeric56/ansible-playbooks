@@ -1,0 +1,11 @@
+---
+- hosts: zLinuxAAP
+  remote_user: affouad
+
+  tasks:
+    # upload ssh key                
+    - authorized_key:
+            user: affouard
+            state: present
+            manage_dir: yes
+            key: "{{ lookup('file', '/Users/Aymeric/.ssh/id_ecdsa.pub') }}"

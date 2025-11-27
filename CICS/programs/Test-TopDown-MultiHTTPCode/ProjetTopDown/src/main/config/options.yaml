@@ -1,0 +1,6 @@
+language: COBOL
+connectionRef: cicsConn
+program: AAYTEST
+ccsid: 037
+programInterface: CHANNEL
+provider: CICS

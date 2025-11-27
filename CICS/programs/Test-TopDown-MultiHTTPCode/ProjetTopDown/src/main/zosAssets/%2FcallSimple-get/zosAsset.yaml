@@ -1,0 +1,11 @@
+---
+version: 1.0
+type: "cicsChannel-1.1"
+description: ""
+providerProperties:
+  language: "COBOL"
+  program: "AAYTEST"
+  connectionRef: "cicsConn"
+  ccsid: "037"
+  
+  

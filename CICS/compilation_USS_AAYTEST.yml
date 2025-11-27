@@ -1,0 +1,80 @@
+---
+- name: Compilation d'un programme CICS COBOL avec SQL
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars:
+    pgmtocompile: 'AAYTEST'
+    csdgroup: 'AYMERIC'
+    cmci_host: '10.3.20.1'
+    cmci_port: '3050'
+    cmci_user: 'AYMERIC'
+    context: 'MOBPLEX'
+    scope: 'CICSMOBP'
+    scheme: 'http'
+
+  tasks:
+    - name: Compress Directory contents
+      ansible.builtin.archive:
+        path: 
+        - /Users/Aymeric/Documents/Git/ansible-playbooks/CICS/programs/Test-TopDown-MultiHTTPCode/COBOL/*
+        dest: /Users/Aymeric/Documents/Git/ansible-playbooks/CICS/programs/Test-TopDown-MultiHTTPCode/AAYTEST.zip  
+        format: zip
+      delegate_to: 127.0.0.1
+
+    - name: Copy an extract the zip file to z/OS
+      ibm.ibm_zos_core.zos_unarchive:
+        src: ./CICS/programs/Test-TopDown-MultiHTTPCode/AAYTEST.zip
+        dest: /u/aymeric/SRC_CICS
+        format: 
+          name: zip
+        force: true
+
+    - name: Change for execution to 80col trailing for files
+      ansible.builtin.file:
+        path: /u/aymeric/SRC_CICS/iconv_80col.sh
+        mode: '0744'
+
+    - name: Execute the command in remote shell
+      ansible.builtin.shell: /u/aymeric/SRC_CICS/iconv_80col.sh
+
+    - name: Submit compile job
+      ibm.ibm_zos_core.zos_job_submit:
+        src: ./templates/COMPCDB2_coprocessor_USS.j2
+        location: local
+        use_template: true
+        wait_time_s: 15
+        max_rc: 4
+        encoding:
+          from: ISO8859-1
+          to: IBM-037
+      register: respcompil
+
+    - name: Output Soumission Compil
+      ansible.builtin.debug:
+        msg: "{{ respcompil.jobs[0].ddnames[0].content }}"
+
+    - name: NEWCOPY PROGRAM in CICS
+      delegate_to: localhost
+      ibm.ibm_zos_cics.cmci_action:
+        context: '{{ context }}'
+        scope: '{{ scope }}'
+        cmci_host: '{{ cmci_host }}'
+        cmci_port: '{{ cmci_port | int }}'
+        cmci_user: '{{ cmci_user | default(omit) }}'
+        cmci_password: '{{ cmci_password | default(omit) }}'
+        scheme: '{{ scheme }}'
+        action_name: NEWCOPY
+        type: CICSProgram
+        resources:
+          filter:
+            program: '{{ pgmtocompile }}'
+      register: outnewcopy
+
+    - name: Output of the CICS NEWCOPY
+      ansible.builtin.debug:
+        msg:
+          - { "CMCI failed": "{{ outnewcopy.failed }}",
+              "program": "{{ outnewcopy.records[0].program }}",
+              "status": "{{ outnewcopy.records[0].status }}" }

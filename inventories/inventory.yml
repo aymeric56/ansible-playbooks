@@ -20,3 +20,6 @@ source_system:
     zt02:
       ansible_host: 10.3.20.2
       ansible_user: aymeric
+    zLinuxAAP:
+      ansible_host: 10.7.1.39
+      ansible_user: affouard

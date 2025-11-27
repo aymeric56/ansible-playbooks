@@ -1,0 +1,9 @@
+plugins {
+    id 'com.ibm.zosconnect.gradle' version '1.4.10' 
+}
+repositories {
+  maven {
+    url '/templates/gradleLibs/'
+  }
+  mavenCentral()
+}

@@ -1,0 +1,17 @@
+---
+- name: Playbook de commande RACF
+  hosts: zt01
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+- tasks:
+  # TSO command
+  - name: Execute TSO command CONNECT {{ userid }} to GROUP {{group}}
+    ibm.ibm_zos_core.zos_tso_command:
+      commands:
+        - CO {{ userid }} GRO({{group}})
+    register: display
+
+  - name: Show display
+    ansible.builtin.debug:
+      msg: "{{ display }}"

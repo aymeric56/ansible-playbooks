@@ -1,0 +1,76 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "channel" : {
+      "description" : "json-schema",
+      "type" : "object",
+      "properties" : {
+        "responseCode200" : {
+          "type" : "object",
+          "properties" : {
+            "lastName" : {
+              "type" : "string"
+            },
+            "firstName" : {
+              "type" : "string"
+            },
+            "telExtension" : {
+              "type" : "string"
+            },
+            "zipCode" : {
+              "type" : "string"
+            },
+            "id" : {
+              "type" : "string"
+            }
+          }
+        },
+        "responseCode404" : {
+          "type" : "object",
+          "properties" : {
+            "lastName" : {
+              "type" : "string"
+            },
+            "firstName" : {
+              "type" : "string"
+            },
+            "telExtension" : {
+              "type" : "string"
+            },
+            "zipCode" : {
+              "type" : "string"
+            },
+            "id" : {
+              "type" : "string"
+            }
+          }
+        },
+        "responseCode500" : {
+          "type" : "object",
+          "properties" : {
+            "lastName" : {
+              "type" : "string"
+            },
+            "firstName" : {
+              "type" : "string"
+            },
+            "telExtension" : {
+              "type" : "string"
+            },
+            "zipCode" : {
+              "type" : "string"
+            },
+            "id" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "abendCode" : {
+      "type" : "string"
+    }
+  },
+  "description" : "General wrapper for CICS channel z/OS Asset responses"
+}

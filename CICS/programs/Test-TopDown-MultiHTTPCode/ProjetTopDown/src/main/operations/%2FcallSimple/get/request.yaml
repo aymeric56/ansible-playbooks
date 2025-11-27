@@ -1,0 +1,25 @@
+---
+version: 1.2
+mappings:
+- channel:
+    mappings:
+    - DFHWS-URI:
+        template: "/callSimple"
+    - DFHWS-URI-QUERY:
+        template: "{{$join($each($queryParameters, function($value, $key) {$key & \"=\" & $value}), \"&\")}}"
+    - DFHHTTPMETHOD:
+        template: "GET"
+    - data:
+        mappings:
+        - requestQueryParameters:
+            mappings:
+            - codeReponse:
+                type: "string"
+                template: "{{$queryParameters.'codeReponse'}}"
+                required: true
+                nullable: false
+            - lastName:
+                type: "string"
+                template: "{{$queryParameters.'lastName'}}"
+                required: true
+                nullable: false
