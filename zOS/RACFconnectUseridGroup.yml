@@ -10,8 +10,8 @@
       ibm.ibm_zos_core.zos_tso_command:
         commands:
           - CO {{ userid }} GRO({{group}})
+        max_rc: 4
       register: display
-      max_rc: 4
       ignore_errors: true
 
     - name: Show display
