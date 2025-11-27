@@ -11,6 +11,7 @@
         commands:
           - CO {{ userid }} GRO({{group}})
       register: display
+      ignore_errors: true
 
     - name: Show display
       ansible.builtin.debug:
