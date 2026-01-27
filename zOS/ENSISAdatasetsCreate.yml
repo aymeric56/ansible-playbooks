@@ -1,6 +1,6 @@
 ---
 - name: Playbook de tâches diverses
-  hosts: zac
+  hosts: zAc
   gather_facts: false
   environment: "{{ environment_vars }}"
 
@@ -51,17 +51,17 @@
         batch:
           - name: ENSISA.EXAM.{{ item }}.SOURCES
             type: pds
-            space_primary: 1
-            space_secondary: 1
-            space_type: M
+            space_primary: 2
+            space_secondary: 2
+            space_type: m
             record_format: fb
             record_length: 80
             replace: true
           - name: ENSISA.EXAM.{{ item }}.JCL
             type: pds
-            space_primary: 1
-            space_secondary: 1
-            space_type: M
+            space_primary: 2
+            space_secondary: 2
+            space_type: m
             record_format: fb
             record_length: 80
             replace: true

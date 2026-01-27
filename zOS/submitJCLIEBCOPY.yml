@@ -1,0 +1,18 @@
+---
+# task appelée par submitRACFloopzAc
+- name: Submit compile job {{ usertso }} 
+  ibm.ibm_zos_core.zos_job_submit:
+    src: ./templates/IEBCOPY.j2
+    location: local
+    wait_time_s: 10
+    max_rc: 4
+    use_template: true
+    encoding:
+      from: ISO8859-1
+      to: IBM-037
+  register: respcompil
+  ignore_errors: true
+
+- name: Output Soumission Compil
+  ansible.builtin.debug:
+    msg: "{{ respcompil.jobs[0].ddnames[0].content }}"

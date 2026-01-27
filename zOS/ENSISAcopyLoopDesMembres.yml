@@ -12,7 +12,7 @@
           # - GLASMAY
           # - PICARD
           # - PAUCOT
-          # - ENSIS00
+          - ENSIS00
           # - ENSIS01
           # - ENSIS02
           # - ENSIS03
@@ -41,17 +41,17 @@
           # - ENSIS26
           # - ENSIS27
           # - ENSIS28
-          - ENSIS29
-          - ENSIS30
-          - ENSIS31
-          - ENSIS32
-          - ENSIS33
-          - ENSIS34
-          - ENSIS35
-          - ENSIS36
-          - ENSIS37
-          - ENSIS38
-          - ENSIS39
+          # - ENSIS29
+          # - ENSIS30
+          # - ENSIS31
+          # - ENSIS32
+          # - ENSIS33
+          # - ENSIS34
+          # - ENSIS35
+          # - ENSIS36
+          # - ENSIS37
+          # - ENSIS38
+          # - ENSIS39
           # - ZTECU01
           # - ZTECU02
           # - ZTECU03
@@ -75,7 +75,7 @@
           # - ECTELECO
 
     - name: Commande TSO
-      ansible.builtin.include_tasks: copyDesMembresENSISA.yml
+      ansible.builtin.include_tasks: ENSISAcopyDesMembres.yml
       loop: "{{ users }}"
       loop_control:
         loop_var: userEnsisa
