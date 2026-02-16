@@ -147,8 +147,10 @@
        01 WS-DISPLAY-MSG     PIC X(78) VALUE ALL SPACES.
 
       * User credentials for basic authentication
-       01 MY-USER PIC X(10) VALUE 'ZCOBOSS'.
-       01 MY-PSWD PIC X(10) VALUE 'zcee4you'.
+      * 01 MY-USER PIC X(10) VALUE 'ZCOBOSS'.
+      * 01 MY-PSWD PIC X(10) VALUE 'zcee4you'.
+       01 MY-USER PIC X(10) VALUE 'employ1'.
+       01 MY-PSWD PIC X(10) VALUE 'employpw'.
 
        LINKAGE SECTION.
 
@@ -219,7 +221,7 @@
                EVALUATE TRUE
                WHEN TPSTAT-OK
                WHEN TPSTAT-EXIST
-                    DISPLAY 'Avant Validate LN : ' IN-LAST-NAME
+                    DISPLAY 'Avant Validate AA LN : ' IN-LAST-NAME
                     PERFORM VALIDATE-INPUT
       * INPUT WASVALID, CONTINUE
                     IF VALID-INPUT = 0
@@ -489,6 +491,12 @@
            MOVE LENGTH OF zipCode2 of requestBody
                        TO zipCode2-length of requestBody.
 
+           MOVE 1 TO loopbackcontacts-existence of requestBody.
+           MOVE "archivedContacts" TO loopbackcontactsarchived2
+                                                    of requestBody.
+           MOVE LENGTH OF loopbackcontactsarchived2 of requestBody
+                     TO loopbackcontactsarch-length of requestBody.
+
       *     SET WS-API-INFO TO ADDRESS OF BAQ-API-INFO-RBK02I01.
            SET BAQ-REQ-BASE-ADDRESS TO ADDRESS OF BAQBASE-API00Q01.
            MOVE LENGTH OF BAQBASE-API00Q01 TO BAQ-REQ-BASE-LENGTH.
@@ -534,17 +542,17 @@
       * The RESTful API has returned but the HTTP Status Code could
       * be 200 (OK) to indicate a successful return
 
-           IF BAQ-RESP-STATUS-CODE EQUAL 200 THEN
+           IF BAQ-RESP-STATUS-CODE EQUAL 201 THEN
       *        DISPLAY 'C est bon code retour : ' BAQ-RESP-STATUS-CODE
-              IF responseCode200-existence > 0 THEN
+              IF responseCode201-existence > 0 THEN
 
-                 MOVE LENGTH OF API00P01-responseCode200 TO
+                 MOVE LENGTH OF API00P01-responseCode201 TO
                     WS-ELEMENT-LENGTH
 
       * Récupère les données du code retour 200
                  CALL BAQ-GETN-NAME USING
                          BY REFERENCE BAQ-ZCONNECT-AREA
-                         responseCode200-dataarea
+                         responseCode201-dataarea
                          BY REFERENCE WS-ELEMENT
                          BY REFERENCE WS-ELEMENT-LENGTH
 
@@ -555,7 +563,7 @@
                     DISPLAY ' GETN Reason Code ' WS-RC9
                     DISPLAY BAQ-ZCON-RETURN-MESSAGE
                  ELSE
-                       SET ADDRESS OF API00P01-responseCode200 to
+                       SET ADDRESS OF API00P01-responseCode201 to
                                                  WS-ELEMENT
       *                 DISPLAY 'Xid2 : ' Xid2
                        MOVE 'ARCHIVED' TO OUT-COMMAND

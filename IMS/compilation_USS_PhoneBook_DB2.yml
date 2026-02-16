@@ -49,26 +49,13 @@
     - name: Execute the command in remote shell
       ansible.builtin.shell: /u/aymeric/SRC_IMS/iconv_80col.sh
 
-    - name: Create temporary directory for the compilation JCL
-      ansible.builtin.tempfile:
-        state: directory
-      register: temp_file_path
-      delegate_to: localhost
-
-    - name: Compile templates and put results in temporary directory
-      ansible.builtin.template:
-        src: "./templates/COIMSDB2_coprocessor_USS.j2"
-        dest: "{{ temp_file_path.path }}/COIMSDB2.j2"
-        output_encoding: ISO8859-1
-        mode: '0644'
-      delegate_to: localhost
-
     - name: Submit compile job
       ibm.ibm_zos_core.zos_job_submit:
-        src: "{{ temp_file_path.path }}/COIMSDB2.j2"
+        src: "./templates/COIMSDB2_coprocessor_USS.j2"
         location: local
         wait_time_s: 15
         max_rc: 4
+        use_template: true
         encoding:
           from: ISO8859-1
           to: IBM-037
